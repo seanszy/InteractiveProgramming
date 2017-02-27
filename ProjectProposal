@@ -1,0 +1,27 @@
+Catch Them Colors!
+Sean Szymanski and Colvin Chapman
+Overview
+Main Idea: The main idea of this project is to create a game involving color sensing. The game will be played in real time using a computer’s webcam. The game begins when the computer generates a color. The user will then take the computer around the real world and find that color. When the color is found, the player wins. The game may vary from this slightly. For example, you could match the highest number of things in a certain time period, or you could base a match on the average value of the pixels on the screen instead of having an exact color. The specific goal will be flushed out as we go.
+Topics: This will be related to graphics and vision processing. It will also be interactive with the user.
+MVP
+Our mvp is a game that will run in terminal without graphics.
+The program tells us to find a color, with a visual representation of that color. 
+There will be a command to take a picture using the camera in the laptop, and our program will tell you if the colors in the picture are close enough to the original.
+Stretch Goal
+Stretch goal is to do the game exactly in real time. This would involve having a bar on the side of the screen that currently updates with the RGB value that it reads and shows an image of the color it sees.
+Implementing a profile system. The program would save the profile of a user and would save the number of colors caught.
+Implement a scoring system.
+Learning Goals
+Colvin: Learn how to find information about programing online. I’m assuming there are many structures already in place, and learning how to utilize them will be vital to growing my software skills. As a more concrete goal, I would enjoy looking into graphics and interactive display, but OpenCV comes first.
+Sean: I want to learn how to use OpenCV succesfully. This would be a very useful tool for the future. I also want to learn how to make the interface for the program. Interfaces seem difficult, but also very useful.
+Libraries
+OpenCV
+Image Processing?
+General Graphics Library
+We will figure this out by doing online research into analyzing webcam images
+Mid-Project Check-In Progress:
+Chosen Libraries
+Implementation Plan
+Random Color Generator
+Implemented OpenCV in some form
+
