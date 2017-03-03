@@ -4,6 +4,7 @@ from math import pi
 pygame.init()
 screen_x = 1840
 screen_y = 920
+block_size = 40
 size = [1840, 920]
 screen = pygame.display.set_mode(size)
 BLACK = (  0,   0,   0)
@@ -11,65 +12,62 @@ WHITE = (255, 255, 255)
 BLUE =  (  0,   0, 255)
 GREEN = (  0, 255,   0)
 RED =   (255,   0,   0)
+color_matrix = [BLACK, BLUE, GREEN, RED]
 
-class Rectangle():
-    def __init__(self, x = 10, y = 10, width = 20, height = 10, color = BLACK):
+
+class Block():
+    def __init__(self, x=10, y=10, width=block_size, height=block_size, color=BLACK):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.color = color
 
-    #draws the rectangles that are dropped
-    def draw_rectangle(self):
-        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], 1)
+    # draws the rectangles that are dropped
+    def draw(self):
+        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width,
+                                              self.height], 1)
 
-#Control
+
+class Field():
+    def __init__(self, num_rows=3, color=0):
+        self.blocks = []
+
+        for z in range(num_rows):
+            for i in range(int(screen_x/block_size)):
+                rectangle_color = color_matrix[color]
+                block = Block(i*block_size, screen_y-block_size*z - block_size,
+                              block_size, block_size, rectangle_color)
+                self.blocks.append(block)
+
+
+# Control
 def main():
-    color_matrix = [BLACK, BLUE, GREEN, RED]
     pygame.display.set_caption("Game!")
-    shoot_object_list = []
     done = False
     clock = pygame.time.Clock()
-    text_x = 150
-    text_y = 20
-    rectangles_x = 100
-    rectangles_y = 100
-    rectangle_list = []
-    which_object = "Rectangle"
-    color = 0
-    draw_rectangle = 0
+    field = Field()
 
-    #Main Loop
+    # Main Loop
     while not done:
-        clock.tick(10)
+        clock.tick(40)
 
-        #quit, change color, and change from controlling rect to text
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done=True
+                done = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    done=True
-        num_rows = 3
-        for z in range(num_rows):
-            for i in range(int(screen_x/40)):
-                pass
-                draw_rectangle_x = rectangles_x
-                draw_rectangle_y = rectangles_y
-                rectangle_color = color_matrix[color]
-                rectangle = Rectangle(i*40, screen_y-40*z - 40, 40, 40, rectangle_color)
-                rectangle_list.append(rectangle)
+                    done = True
 
 
-        #VIEW-------------------------------------------------------------------
-        screen.fill(WHITE)
+        # VIEW-------------------------------------------------------------------
+        screen.fill((150, 190, 255))
 
-        #draw rectangle objects
-        for rectangles in rectangle_list:
-            rectangles.draw_rectangle()
+        # draw rectangle objects
+        for block in field.blocks:
+            block.draw()
 
-        #draw color matric and main rectangle
+        # draw color matric and main rectangle
         pygame.display.flip()
 
     pygame.quit()
