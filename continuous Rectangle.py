@@ -24,10 +24,14 @@ class Rectangle():
         self.color = color
     def draw_rectangle(self):
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+
     def draw_shot(self):
         self.x = self.x + 10
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+
+    def jump(self):
+
 
 def main():
     # Initialize the game engine
@@ -90,7 +94,7 @@ def main():
                     if event.key == pygame.K_w:
                         text_y += -10
                     if event.key == pygame.K_s:
-                        text_y += 10
+                        rectangle.jump()
             if which_object == "Rectangle":
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_q:
