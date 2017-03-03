@@ -28,7 +28,8 @@ class Rectangle():
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
-
+def menu():
+    pygame.display.set_caption("Menu")
 #Control
 def main():
     color_matrix = [BLACK, BLUE, GREEN, RED]
