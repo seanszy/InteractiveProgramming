@@ -2,7 +2,7 @@ import pygame
 from math import pi
 
 pygame.init()
-size = [400, 300]
+size = [1840, 920]
 screen = pygame.display.set_mode(size)
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -27,17 +27,53 @@ class Rectangle():
 
 
     def draw_shot(self):
+        self.x = self.x + 1
+        self.y = self.y
+        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+
+
+class Player():
+    def __init__(self, x=40, y=10, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.velocity = velocity
+        self.fall = fall
+        self.left = left
+        self.right = right
+        self.acceleration_constant = .6
+
+
+    # draws the rectangles that are dropped
+    def draw(self):
+        if self.fall == 'on':
+            self.velocity += self.acceleration_constant
+
+        if self.left == 'on':
+            self.x += -4
+
+        if self.right == 'on':
+            self.x += 4
+
+        self.y = self.y + self.velocity
+        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+
+
+    def draw_shot(self):
         self.x = self.x + 10
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
 
+    def jump(self):
+        self.velocity = -8
+        self.fall = 'on'
+
+
 def menu():
     pygame.display.set_caption("Menu")
-
-
-    def jump(self):
-        pass
 
 
 #Control
@@ -52,24 +88,32 @@ def main():
     rectangles_x = 100
     rectangles_y = 100
     rectangle_list = []
-    which_object = "Rectangle"
     color = 0
 
+    player = Player()
 
 ### CONTROL
 
     while not done:
         clock.tick(40)
-
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
-            rectangles_y += -3
+            player.jump()
         if keys[pygame.K_DOWN]:
             rectangles_y += 3
         if keys[pygame.K_LEFT]:
-            rectangles_x += -3
+            player.left = 'on'
+        else:
+            player.left = 'off'
+
         if keys[pygame.K_RIGHT]:
-            rectangles_x += 3
+            player.right = 'on'
+        else:
+            player.right = 'off'
+
+        if player.y >= 740:
+            player.y = 740
+            player.fall = 'off'
 
         for event in pygame.event.get():  # User did something
 
@@ -81,60 +125,36 @@ def main():
                     color += 1
                     if color == 3:
                         color = 0
-                if event.key == pygame.K_t:
-                    which_object = "Text"
-                if event.key == pygame.K_r:
-                    which_object = "Rectangle"
+                    player.color = color_matrix[color]
 
-            #control text
-            if which_object == "Text":
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        done = True
-                    if event.key == pygame.K_a:
-                        text_x += -10
-                    if event.key == pygame.K_d:
-                        text_x += 10
-                    if event.key == pygame.K_w:
-                        text_y += -10
-                    if event.key == pygame.K_s:
-                        rectangle.jump()
+                # make shoot object
+                if event.key == pygame.K_f:
+                    draw_rectangle_x = player.x
+                    draw_rectangle_y = player.y
+                    rectangle_color = color_matrix[color]
+                    rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
+                    shoot_object_list.append(rectangle)
 
-            if which_object == "Rectangle":
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_q:
-                            done = True
-                        if event.key == pygame.K_a:
-                            rectangles_x +=-10
-                        if event.key == pygame.K_d:
-                            rectangles_x+=10
-                        if event.key == pygame.K_w:
-                            rectangles_y += -10
-                        if event.key == pygame.K_s:
-                            rectangles_y += 10
+                # make rectangle object
+                if event.key == pygame.K_g:
+                        draw_rectangle_x = player.x
+                        draw_rectangle_y = player.y
+                        rectangle_color = color_matrix[color]
+                        rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
+                        rectangle_list.append(rectangle)
 
-                        #make shoot object
-                        if event.key == pygame.K_f:
-                            draw_rectangle_x = rectangles_x
-                            draw_rectangle_y = rectangles_y
-                            rectangle_color = color_matrix[color]
-                            rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                            shoot_object_list.append(rectangle)
+                # clear objects
+                if event.key == pygame.K_z:
+                        rectangle_list = []
+                        shoot_object_list = []
 
-                        #make rectangle object
-                        if event.key == pygame.K_g:
-                                draw_rectangle_x = rectangles_x
-                                draw_rectangle_y = rectangles_y
-                                rectangle_color = color_matrix[color]
-                                rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                                rectangle_list.append(rectangle)
+                if event.key == pygame.K_q:
+                    pygame.quit()
+                    return
 
-                        #clear objects
-                        if event.key == pygame.K_z:
-                                rectangle_list = []
-
-### View
+        # View-------------------------------------------------------------
         screen.fill(WHITE)
+
         #draw text
         myfont = pygame.font.SysFont("monospace", 15)
         text_color = (0, 0, 0)
@@ -151,8 +171,8 @@ def main():
             shooters.draw_shot()
 
         #draw color matric and main rectangle
-        pygame.draw.rect(screen, color_matrix[color], [rectangles_x, rectangles_y, 50, 20])
         pygame.draw.rect(screen, color_matrix[color], [0, 0, 40, 40])
+        player.draw()
 
         pygame.display.flip()
 
