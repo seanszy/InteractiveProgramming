@@ -12,6 +12,9 @@ BLUE =  (  0,   0, 255)
 GREEN = (  0, 255,   0)
 RED =   (255,   0,   0)
 
+
+### Model
+
 class Rectangle():
     def __init__(self, x = 10, y = 10, width = 20, height = 10, color = BLACK):
         self.x = x
@@ -48,9 +51,12 @@ def main():
     rectangle_list = []
     which_object = "Rectangle"
     color = 0
-    draw_rectangle = 0
+
+
+### CONTROL
+
     while not done:
-        clock.tick(10)
+        clock.tick(40)
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             rectangles_y += -3
@@ -60,15 +66,13 @@ def main():
             rectangles_x += -3
         if keys[pygame.K_RIGHT]:
             rectangles_x += 3
-        for event in pygame.event.get(): # User did something
+        for event in pygame.event.get():  # User did something
 
-
-
-            if event.type == pygame.QUIT: # If user clicked close
-                done=True
+            if event.type == pygame.QUIT:  # If user hit q or closed
+                done = True
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
-                    color+=1
+                    color += 1
                     if color == 3:
                         color = 0
                 if event.key == pygame.K_t:
@@ -80,9 +84,9 @@ def main():
                     if event.key == pygame.K_q:
                         done = True
                     if event.key == pygame.K_a:
-                        text_x +=-10
+                        text_x += -10
                     if event.key == pygame.K_d:
-                        text_x+=10
+                        text_x += 10
                     if event.key == pygame.K_w:
                         text_y += -10
                     if event.key == pygame.K_s:
@@ -113,10 +117,7 @@ def main():
                                 rectangle_list.append(rectangle)
                         if event.key == pygame.K_z:
                                 rectangle_list = []
-        # All drawing code happens after the for loop and but
-        # inside the main while done==False loop.
 
-        # Clear the screen and set the screen background
         screen.fill(WHITE)
 
         # Draw on the screen a GREEN line from (0,0) to (50.75)
