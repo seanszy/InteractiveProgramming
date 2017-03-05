@@ -86,6 +86,7 @@ class Player():
         self.velocity = -8
         self.fall = 'on'
 
+
 class Text():
     def __init__(self, text, x_pos, y_pos, size, color):
         self.text = text
