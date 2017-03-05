@@ -131,6 +131,14 @@ def menu():
         texts.print_text()
     return [menu_screen, done]
 
+
+def ground_collision(player, field, jump=1):
+        if player.y >= 721:
+            player.y = 721
+            jump = 1
+            player.fall = 'off'
+        return jump
+
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
         bin_list = [0, 0, 0 ]
@@ -203,10 +211,7 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 720:
-                player.y = 720
-                jump = 1
-                player.fall = 'off'
+            jump = ground_collision(player, field, jump)
 
             for event in pygame.event.get():  # User did something
 
