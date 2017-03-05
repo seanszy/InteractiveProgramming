@@ -13,8 +13,8 @@ block_size = 40
 color_matrix = [BLACK, BLUE, GREEN, RED]
 text_x = 20
 text_y = 200
+jump = 0
 ### Model
-
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
         self.x = x
@@ -38,6 +38,14 @@ class Rectangle():
 class Field():
     def __init__(self, num_rows=3, color=0):
         self.blocks = []
+        self.block_points = []
+        self.matrix = []
+        inner = []
+        for j in range(size[0] % 40):
+            inner.append(j)
+        for i in range(size[1] % 40):
+            self.matrix.append(inner)
+
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
@@ -45,6 +53,8 @@ class Field():
                 block = Rectangle(column*block_size, size[1]-block_size*row - block_size,
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
+                self.block_points.append((column*block_size, size[1]-block_size*row - block_size))
+
 
 class Player():
     def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
@@ -84,6 +94,7 @@ class Player():
     def jump(self):
         self.velocity = -8
         self.fall = 'on'
+
 
 class Text():
     def __init__(self, text, x_pos, y_pos, size, color):
@@ -129,9 +140,13 @@ def menu():
         texts.print_text()
     return [menu_screen, done]
 
+
+def ground_collision(player, field):
+    pass
+
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0]
+        bin_list = [0, 0, 0 ]
         bin_list_item = [RED, BLACK, GREEN]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -182,6 +197,8 @@ def main():
 ### CONTROL
     while not done:
         player.fall = 'on'
+        mouse = pygame.mouse.get_pos()
+        mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
             returned = menu()
             menu_screen = returned[0]
@@ -189,8 +206,6 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                player.jump()
             if keys[pygame.K_DOWN]:
                 rectangles_y += 3
             if keys[pygame.K_LEFT]:
@@ -205,8 +220,9 @@ def main():
 
             if player.y >= 720:
                 player.y = 720
+                player.velocity = 0
+                jump = 1
                 player.fall = 'off'
-
 
             for event in pygame.event.get():  # User did something
 
@@ -214,6 +230,10 @@ def main():
                     done = True
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        if jump == 1:
+                            player.jump()
+                        jump = 0
                     if event.key == pygame.K_p:
                         menu_screen = True
                     if event.key == pygame.K_c:
@@ -238,7 +258,7 @@ def main():
                     if event.key == pygame.K_f:
                         draw_rectangle_x = player.x
                         draw_rectangle_y = player.y
-                        rectangle_color = color_matrix[color]
+                        rectangle_color = color_matrix[player_color]
                         rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                         shoot_object_list.append(rectangle)
 
@@ -246,7 +266,7 @@ def main():
                     if event.key == pygame.K_g:
                             draw_rectangle_x = player.x
                             draw_rectangle_y = player.y
-                            rectangle_color = color_matrix[color]
+                            rectangle_color = color_matrix[player_color]
                             rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                             rectangle_list.append(rectangle)
 
@@ -275,10 +295,10 @@ def main():
             # draw color matric and main rectangle
             for block in field.blocks:
                 block.draw_with_outline()
+            print(field.matrix)
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
-
         pygame.display.flip()
 
     pygame.quit()
