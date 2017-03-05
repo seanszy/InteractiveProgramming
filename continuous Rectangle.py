@@ -15,7 +15,6 @@ text_x = 20
 text_y = 200
 jump = 0
 ### Model
-
 class Rectangle():
     def __init__(self, x = 10, y = 10, width = 20, height = 10, color = BLUE):
         self.x = x
@@ -287,7 +286,6 @@ def main():
 
             inventory.draw_inventory(inventory_block_index)
             player.draw()
-
         pygame.display.flip()
 
     pygame.quit()
