@@ -16,7 +16,7 @@ text_y = 200
 jump = 0
 ### Model
 class Rectangle():
-    def __init__(self, x = 10, y = 10, width = 20, height = 10, color = BLUE):
+    def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
         self.x = x
         self.y = y
         self.width = width
@@ -141,17 +141,16 @@ class Inventory():
         self.bin_height = bin_height
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
-        self.dropped_blocks = []
     def add_to_inventory(self, block_type):
         self.bin_list[block_type] += 1
-        #self.bin_list[block_type] += 1
-    def remove_from_inventory(self, block_type, player_x, player_y, current_block_index):
+
+    def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index):
         if self.bin_list[block_type] > 0:
             self.bin_list[block_type] -= 1
             drop_block = Rectangle(player_x, player_y, 40, 40, self.bin_list_item[current_block_index])
-            self.dropped_blocks.append(drop_block)
-        #self.bin_list[block_type] -= 1
-    def draw_inventory(self, current_block_index):
+            field.blocks.append(drop_block)
+
+    def draw_inventory(self, field,  current_block_index):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
         for bin in range(len(self.bin_list)):
@@ -163,8 +162,7 @@ class Inventory():
         text2.print_text()
         current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
         current_block.draw_rectangle()
-        for dropped_block in self.dropped_blocks:
-            dropped_block.draw_with_outline()
+
 
 #Control
 def main():
@@ -185,11 +183,11 @@ def main():
 ### CONTROL
     while not done:
         player.fall = 'on'
-        if menu_screen == True:
+        if menu_screen is True:
             returned = menu()
             menu_screen = returned[0]
             done = returned[1]
-        if menu_screen == False:
+        if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
             if keys[pygame.K_DOWN]:
@@ -227,18 +225,17 @@ def main():
                             player_color = 0
                         player.color = color_matrix[player_color]
 
-                    #inventory
+                    # inventory
                     if event.key == pygame.K_e:
                         inventory.add_to_inventory(inventory_block_index)
                     if event.key == pygame.K_r:
-                        inventory.remove_from_inventory(inventory_block_index, player.x, player.y, inventory_block_index)
+                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index)
                     if event.key == pygame.K_1:
                         inventory_block_index = 0
                     if event.key == pygame.K_2:
                         inventory_block_index = 1
                     if event.key == pygame.K_3:
                         inventory_block_index = 2
-
 
                     # make shoot object
                     if event.key == pygame.K_f:
@@ -268,23 +265,21 @@ def main():
             # View-------------------------------------------------------------
             screen.fill(WHITE)
 
-            #draw text
+            # draw text
 
-
-            #draw rectangle objects
+            # draw rectangle objects
             for rectangles in rectangle_list:
                 rectangles.draw_with_outline()
 
-            #draw shooter objects
+            # draw shooter objects
             for shooters in shoot_object_list:
                 shooters.draw_shot()
 
-            #draw color matric and main rectangle
-            for rectangle in field.blocks:
-                rectangle.draw_with_outline()
+            # draw color matric and main rectangle
+            for block in field.blocks:
+                block.draw_with_outline()
 
-
-            inventory.draw_inventory(inventory_block_index)
+            inventory.draw_inventory(field, inventory_block_index)
             player.draw()
         pygame.display.flip()
 
