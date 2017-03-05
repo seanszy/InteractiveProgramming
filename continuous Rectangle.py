@@ -41,6 +41,14 @@ class Rectangle():
 class Field():
     def __init__(self, num_rows=3, color=0):
         self.blocks = []
+        self.block_points = []
+        self.matrix = []
+        inner = []
+        for j in range(size[0] % 40):
+            inner.append(j)
+        for i in range(size[1] % 40):
+            self.matrix.append(inner)
+
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
@@ -48,6 +56,8 @@ class Field():
                 block = Rectangle(column*block_size, size[1]-block_size*row - block_size,
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
+                self.block_points.append((column*block_size, size[1]-block_size*row - block_size))
+
 
 class Player():
     def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
@@ -132,6 +142,10 @@ def menu():
     for texts in text_list:
         texts.print_text()
     return [menu_screen, done]
+
+
+def ground_collision(player, field):
+    pass
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
@@ -284,6 +298,7 @@ def main():
             # draw color matric and main rectangle
             for block in field.blocks:
                 block.draw_with_outline()
+            print(field.matrix)
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
