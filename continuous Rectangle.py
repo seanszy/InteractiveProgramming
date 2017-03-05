@@ -183,6 +183,8 @@ def main():
 ### CONTROL
     while not done:
         player.fall = 'on'
+        mouse = pygame.mouse.get_pos()
+        mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
             returned = menu()
             menu_screen = returned[0]
