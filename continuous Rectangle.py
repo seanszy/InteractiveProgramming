@@ -14,6 +14,9 @@ color_matrix = [BLACK, BLUE, GREEN, RED]
 text_x = 20
 text_y = 200
 jump = 0
+
+a = matrix[[1,2], [2, 2]]
+print(a[0,0])
 ### Model
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
