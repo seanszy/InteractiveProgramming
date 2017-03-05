@@ -206,6 +206,7 @@ def main():
 
             if player.y >= 720:
                 player.y = 720
+                player.velocity = 0
                 jump = 1
                 player.fall = 'off'
 
