@@ -13,6 +13,7 @@ block_size = 40
 color_matrix = [BLACK, BLUE, GREEN, RED]
 text_x = 20
 text_y = 200
+jump = 0
 ### Model
 
 class Rectangle():
@@ -84,6 +85,7 @@ class Player():
     def jump(self):
         self.velocity = -8
         self.fall = 'on'
+
 
 class Text():
     def __init__(self, text, x_pos, y_pos, size, color):
@@ -189,8 +191,6 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                player.jump()
             if keys[pygame.K_DOWN]:
                 rectangles_y += 3
             if keys[pygame.K_LEFT]:
@@ -205,6 +205,7 @@ def main():
 
             if player.y >= 720:
                 player.y = 720
+                jump = 1
                 player.fall = 'off'
 
             for event in pygame.event.get():  # User did something
@@ -213,6 +214,10 @@ def main():
                     done = True
 
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        if jump == 1:
+                            player.jump()
+                        jump = 0
                     if event.key == pygame.K_p:
                         menu_screen = True
                     if event.key == pygame.K_c:
@@ -237,7 +242,7 @@ def main():
                     if event.key == pygame.K_f:
                         draw_rectangle_x = player.x
                         draw_rectangle_y = player.y
-                        rectangle_color = color_matrix[color]
+                        rectangle_color = color_matrix[player_color]
                         rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                         shoot_object_list.append(rectangle)
 
@@ -245,7 +250,7 @@ def main():
                     if event.key == pygame.K_g:
                             draw_rectangle_x = player.x
                             draw_rectangle_y = player.y
-                            rectangle_color = color_matrix[color]
+                            rectangle_color = color_matrix[player_color]
                             rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                             rectangle_list.append(rectangle)
 
