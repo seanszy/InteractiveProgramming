@@ -13,8 +13,8 @@ block_size = 40
 color_matrix = [BLACK, BLUE, GREEN, RED]
 text_x = 20
 text_y = 200
-jump = 0
 ### Model
+
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
         self.x = x
@@ -85,7 +85,6 @@ class Player():
         self.velocity = -8
         self.fall = 'on'
 
-
 class Text():
     def __init__(self, text, x_pos, y_pos, size, color):
         self.text = text
@@ -130,17 +129,9 @@ def menu():
         texts.print_text()
     return [menu_screen, done]
 
-
-def ground_collision(player, field, jump=1):
-        if player.y >= 721:
-            player.y = 721
-            jump = 1
-            player.fall = 'off'
-        return jump
-
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0 ]
+        bin_list = [0, 0, 0]
         bin_list_item = [RED, BLACK, GREEN]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -191,8 +182,6 @@ def main():
 ### CONTROL
     while not done:
         player.fall = 'on'
-        mouse = pygame.mouse.get_pos()
-        mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
             returned = menu()
             menu_screen = returned[0]
@@ -200,6 +189,8 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                player.jump()
             if keys[pygame.K_DOWN]:
                 rectangles_y += 3
             if keys[pygame.K_LEFT]:
@@ -212,7 +203,10 @@ def main():
             else:
                 player.right = 'off'
 
-            jump = ground_collision(player, field, jump)
+            if player.y >= 720:
+                player.y = 720
+                player.fall = 'off'
+
 
             for event in pygame.event.get():  # User did something
 
@@ -220,10 +214,6 @@ def main():
                     done = True
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        if jump == 1:
-                            player.jump()
-                        jump = 0
                     if event.key == pygame.K_p:
                         menu_screen = True
                     if event.key == pygame.K_c:
@@ -248,7 +238,7 @@ def main():
                     if event.key == pygame.K_f:
                         draw_rectangle_x = player.x
                         draw_rectangle_y = player.y
-                        rectangle_color = color_matrix[player_color]
+                        rectangle_color = color_matrix[color]
                         rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                         shoot_object_list.append(rectangle)
 
@@ -256,7 +246,7 @@ def main():
                     if event.key == pygame.K_g:
                             draw_rectangle_x = player.x
                             draw_rectangle_y = player.y
-                            rectangle_color = color_matrix[player_color]
+                            rectangle_color = color_matrix[color]
                             rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
                             rectangle_list.append(rectangle)
 
@@ -288,6 +278,7 @@ def main():
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
+
         pygame.display.flip()
 
     pygame.quit()
