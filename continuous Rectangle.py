@@ -15,7 +15,6 @@ text_x = 20
 text_y = 200
 jump = 0
 ### Model
-
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
         self.x = x
@@ -192,6 +191,8 @@ def main():
 ### CONTROL
     while not done:
         player.fall = 'on'
+        mouse = pygame.mouse.get_pos()
+        mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
             returned = menu()
             menu_screen = returned[0]
@@ -287,7 +288,6 @@ def main():
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
-
         pygame.display.flip()
 
     pygame.quit()
