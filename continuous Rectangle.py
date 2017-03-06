@@ -41,9 +41,9 @@ class Field():
         self.block_points = []
         self.matrix = []
         inner = []
-        for j in range(size[0] % 40):
+        for j in range(size[0] // block_size):
             inner.append(j)
-        for i in range(size[1] % 40):
+        for i in range(size[1] // block_size):
             self.matrix.append(inner)
 
 
@@ -142,7 +142,12 @@ def menu():
 
 
 def ground_collision(player, field):
-    pass
+    player_i = player.x//block_size
+    player_j = player.y//block_size
+    print(player_i, player_j)
+    for matrix_row in field.matrix:
+        pass
+
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
@@ -170,7 +175,7 @@ class Inventory():
         for bin in range(len(self.bin_list)):
             rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width, self.bin_width, self.bin_height, self.bin_list_item[bin])
             rectangle.draw_rectangle()
-            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_width, 40, WHITE)
+            text = Text(str(self.bin_list[bin]), self.x_pos + 5, self.y_pos + bin*self.bin_width, 40, WHITE)
             text.print_text()
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_width+60, 20, RED)
         text2.print_text()
@@ -223,6 +228,8 @@ def main():
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
+
+            ground_collision(player, field)
 
             for event in pygame.event.get():  # User did something
 
@@ -295,7 +302,6 @@ def main():
             # draw color matric and main rectangle
             for block in field.blocks:
                 block.draw_with_outline()
-            print(field.matrix)
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
