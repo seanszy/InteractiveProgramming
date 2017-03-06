@@ -42,7 +42,7 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
-        for i in range(size[1]//40):
+        for i in range(size[1]//40 + 1):
             inner = []
             self.matrix.append(inner)
             for j in range(size[0]//40):
@@ -306,12 +306,12 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 719:
-                player.y = 719
+            if player.y >= 839:
+                player.y = 839
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
-
+            print(player.y)
             for event in pygame.event.get():  # User did something
 
                 if event.type == pygame.QUIT:  # If user hit q or closed
