@@ -81,7 +81,7 @@ class Player():
 
     # draws the rectangles that are dropped
     def check_left_collision(self, field):
-        if field.matrix[int(self.ygrid)+1][int(self.xgrid)] == 1:
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid)] != 0:
         #print("Player", (self.xgrid-1), self.ygrid+2)
             #print("ONE")
             #print (self.x, (self.xgrid)*40)
@@ -90,7 +90,7 @@ class Player():
                 self.x = (self.xgrid+1)*40
     def check_right_collision(self, field):
         #print("Player", (self.xgrid+1), self.ygrid+2)
-        if field.matrix[int(self.ygrid)+1][int(self.xgrid+1)] == 1:
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid+1)] != 0:
             #print("ONE")
             #print (self.x, (self.xgrid)*40)
             if self.x > (self.xgrid)*40:
@@ -99,7 +99,7 @@ class Player():
                 #print(field.matrix[int(self.ygrid)+1][int(self.xgrid+1)])
                 self.x = (self.xgrid)*40
     def check_top_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid)] == 1:
+        if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
             #print("ONE")
             #print (self.x, (self.xgrid)*40)
             #print("Y", self.ygrid*40)
@@ -111,7 +111,7 @@ class Player():
                 self.y = (self.ygrid+1)*40
                 self.velocity = self.velocity*-.5
     def check_bottom_collision(self, field):
-        if field.matrix[int(self.ygrid)+2][int(self.xgrid)] == 1:
+        if field.matrix[int(self.ygrid)+2][int(self.xgrid)] != 0:
             #print("ONE")
             #print (self.x, (self.xgrid)*40)
             #print("DETECT")
@@ -216,23 +216,33 @@ class Inventory():
         else:
             self.bin_width = block_size
 
-    def add_to_inventory(self, block_type, mouse, field):
-        if self.bin_list[block_type-1] < 64:
-            if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
-                self.bin_list[block_type-1] += 1
-                x_bin = (mouse[0]//40)*40
-                y_bin = (mouse[1]//40)*40
-                field.matrix[mouse[1]//40][mouse[0]//40] = 0
-                self.update_bin_width(block_type)
+    def add_to_inventory(self, block_type, mouse, field, player_x, player_y):
+        mouse_x_grid = mouse[0] // 40
+        mouse_y_grid = mouse [1] // 40
+        player_x_grid = player_x//40
+        player_y_grid = player_y//40
+        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid):
+            if self.bin_list[block_type-1] < 64:
+                if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
+                    self.bin_list[block_type-1] += 1
+                    x_bin = (mouse[0]//40)*40
+                    y_bin = (mouse[1]//40)*40
+                    field.matrix[mouse[1]//40][mouse[0]//40] = 0
+                    self.update_bin_width(block_type)
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
+        mouse_x_grid = mouse[0] // 40
+        mouse_y_grid = mouse [1] // 40
+        player_x_grid = player_x//40
+        player_y_grid = player_y //40
         if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
             if self.bin_list[block_type-1] > 0:
-                self.bin_list[block_type-1] -= 1
-                mouse_x_to_grid = (mouse[0]//40)*40
-                mouse_y_to_grid = (mouse[1]//40)*40
-                drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
-                field.blocks.append(drop_block)
+                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid):
+                    self.bin_list[block_type-1] -= 1
+                    mouse_x_to_grid = (mouse[0]//40)*40
+                    mouse_y_to_grid = (mouse[1]//40)*40
+                    drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                    field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index):
@@ -326,7 +336,7 @@ def main():
 
                     # inventory
                     if event.key == pygame.K_e:
-                        inventory.add_to_inventory(inventory_block_index, mouse, field)
+                        inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
                     if event.key == pygame.K_r:
                         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
