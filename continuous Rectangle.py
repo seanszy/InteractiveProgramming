@@ -57,9 +57,10 @@ class Field():
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
 
-    def matrix_update(self):
+    def matrix_update(self, block_type):
         for block in self.blocks:
-            self.matrix[int(block.y//block_size)][int(block.x//block_size)] = 1
+            self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
+            self.blocks.remove(block)
     def matrix_print(self):
         for rows in self.matrix:
             print(rows)
@@ -200,7 +201,7 @@ def menu():
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
         bin_list = [0, 0, 0 ]
-        bin_list_item = [RED, BLACK, GREEN]
+        bin_list_item = [BLACK, RED, BLACK, GREEN]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -209,14 +210,14 @@ class Inventory():
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
     def add_to_inventory(self, block_type):
-        self.bin_list[block_type] += 1
+        self.bin_list[block_type-1] += 1
         #x_bin = (mouse[0]//40)*40
         #y_bin = (mouse[1]//40)*40
         #self.field[y_bin][x_bin] = 0
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
-        if self.bin_list[block_type] > 0:
-            self.bin_list[block_type] -= 1
+        if self.bin_list[block_type-1] > 0:
+            self.bin_list[block_type-1] -= 1
             player_x_to_grid = (mouse[0]//40)*40
             player_y_to_grid = (mouse[1]//40)*40
             drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
@@ -226,7 +227,7 @@ class Inventory():
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
         for bin in range(len(self.bin_list)):
-            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width, self.bin_width, self.bin_height, self.bin_list_item[bin])
+            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
             rectangle.draw_rectangle()
             text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_width, 40, WHITE)
             text.print_text()
@@ -251,11 +252,12 @@ def main():
     player = Player()
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
-    inventory_block_index = 0
+    inventory_block_index = 2
     jump = 1
 ### CONTROL
     while not done:
-        field.matrix_update()
+        print(inventory_block_index)
+        field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
         jump = player.check_bottom_collision(field)
@@ -317,11 +319,11 @@ def main():
                     if event.key == pygame.K_r:
                         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
-                        inventory_block_index = 0
-                    if event.key == pygame.K_2:
                         inventory_block_index = 1
-                    if event.key == pygame.K_3:
+                    if event.key == pygame.K_2:
                         inventory_block_index = 2
+                    if event.key == pygame.K_3:
+                        inventory_block_index = 3
 
                     # make shoot object
                     if event.key == pygame.K_f:
@@ -371,7 +373,7 @@ def main():
                 row_count += 1
                 for column in row:
                     column_count+=1
-                    print(row_count, column_count)
+                    #print(row_count, column_count)
                     if field.matrix[row_count][column_count] != 0:
                         rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
                         rectangle.draw_with_outline()
@@ -379,7 +381,6 @@ def main():
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
         pygame.display.flip()
-
     pygame.quit()
 
 
