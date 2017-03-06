@@ -59,13 +59,13 @@ class Field():
 
     def matrix_update(self):
         for block in self.blocks:
-            self.matrix[block.y//block_size][block.x//block_size] = 1
+            self.matrix[int(block.y//block_size)][int(block.x//block_size)] = 1
+    def matrix_print(self):
         for rows in self.matrix:
             print(rows)
 
-
 class Player():
-    def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
+    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
         self.x = x
         self.y = y
         self.width = width
@@ -79,6 +79,55 @@ class Player():
 
 
     # draws the rectangles that are dropped
+    def check_left_collision(self, field):
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid)] == 1:
+        #print("Player", (self.xgrid-1), self.ygrid+2)
+            #print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            if self.x < (self.xgrid+1)*40:
+                #print(self.x)
+                self.x = (self.xgrid+1)*40
+    def check_right_collision(self, field):
+        #print("Player", (self.xgrid+1), self.ygrid+2)
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid+1)] == 1:
+            #print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            if self.x > (self.xgrid)*40:
+                #print(self.x)
+                #print("GRID", self.xgrid*40)
+                #print(field.matrix[int(self.ygrid)+1][int(self.xgrid+1)])
+                self.x = (self.xgrid)*40
+    def check_top_collision(self, field):
+        if field.matrix[int(self.ygrid)][int(self.xgrid)] == 1:
+            #print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            #print("Y", self.ygrid*40)
+            if self.y < (self.ygrid+1)*40:
+                #print("TRANSPORT")
+                #print(self.x)
+                #print("GRID", self.xgrid*40)
+                #print(field.matrix[int(self.ygrid)+3][int(self.xgrid+3)])
+                self.y = (self.ygrid+1)*40
+                self.velocity = self.velocity*-.5
+    def check_bottom_collision(self, field):
+        if field.matrix[int(self.ygrid)+2][int(self.xgrid)] == 1:
+            #print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            #print("DETECT")
+            if self.y > (self.ygrid)*40:
+                #print("TRANSPORT")
+                #print(self.x)
+                #print("GRID", self.xgrid*40)
+                self.y = (self.ygrid)*40
+                self.velocity = 0
+                fall = 'off'
+                jump = 1
+                return jump
+
+    def player_in_grid(self):
+        self.xgrid = self.x//block_size
+        self.ygrid = self.y//block_size
+
     def draw(self):
         if self.fall == 'on':
             self.velocity += self.acceleration_constant
@@ -100,7 +149,7 @@ class Player():
 
 
     def jump(self):
-        self.velocity = -8
+        self.velocity = -12
         self.fall = 'on'
 
 
@@ -166,7 +215,7 @@ class Inventory():
         if self.bin_list[block_type] > 0:
             self.bin_list[block_type] -= 1
             player_x_to_grid = (player_x//40)*40
-            player_y_to_grid = (player_y//40)*40
+            player_y_to_grid = (player_y//40)*40+40
             drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
             field.blocks.append(drop_block)
 
@@ -200,9 +249,16 @@ def main():
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 0
+    jump = 1
 ### CONTROL
     while not done:
+        field.matrix_update()
         player.fall = 'on'
+        player.player_in_grid()
+        jump = player.check_bottom_collision(field)
+        player.check_top_collision(field)
+        player.check_left_collision(field)
+        player.check_right_collision(field)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -224,8 +280,8 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 720:
-                player.y = 720
+            if player.y >= 719:
+                player.y = 719
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
@@ -250,7 +306,7 @@ def main():
 
 
                     if event.key == pygame.K_o:
-                        field.matrix_update()
+                        field.matrix_print()
 
                     # inventory
                     if event.key == pygame.K_e:
