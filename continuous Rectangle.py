@@ -33,7 +33,7 @@ class Rectangle():
 
 
     def draw_shot(self):
-        self.x = self.x + 1
+        self.x = self.x
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
@@ -42,20 +42,28 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
-        for j in range(size[0]//40):
-            inner.append(0)
         for i in range(size[1]//40):
+            inner = []
             self.matrix.append(inner)
+            for j in range(size[0]//40):
+                inner.append(0)
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 rectangle_color = color_matrix[color]
-                block = Rectangle(column*block_size, size[1]-block_size*row - block_size,
+                block_x = column*block_size
+                block_y = size[1]-block_size*row - block_size
+                block = Rectangle(block_x, block_y,
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
-    def print_matrix(self):
+
+    def matrix_update(self):
+        for block in self.blocks:
+            self.matrix[block.y//block_size][block.x//block_size] = 1
         for rows in self.matrix:
             print(rows)
+
+
 class Player():
     def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
         self.x = x
@@ -157,7 +165,9 @@ class Inventory():
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index):
         if self.bin_list[block_type] > 0:
             self.bin_list[block_type] -= 1
-            drop_block = Rectangle(player_x, player_y, 40, 40, self.bin_list_item[current_block_index])
+            player_x_to_grid = (player_x//40)*40
+            player_y_to_grid = (player_y//40)*40
+            drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
             field.blocks.append(drop_block)
 
     def draw_inventory(self, field,  current_block_index):
@@ -188,7 +198,6 @@ def main():
     done = False
     player = Player()
     field = Field()
-    field.print_matrix()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 0
 ### CONTROL
@@ -238,6 +247,10 @@ def main():
                         if player_color == 3:
                             player_color = 0
                         player.color = color_matrix[player_color]
+
+
+                    if event.key == pygame.K_o:
+                        field.matrix_update()
 
                     # inventory
                     if event.key == pygame.K_e:
