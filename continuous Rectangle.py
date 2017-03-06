@@ -15,8 +15,7 @@ text_x = 20
 text_y = 200
 jump = 0
 
-a = matrix[[1,2], [2, 2]]
-print(a[0,0])
+
 ### Model
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
@@ -41,14 +40,12 @@ class Rectangle():
 class Field():
     def __init__(self, num_rows=3, color=0):
         self.blocks = []
-        self.block_points = []
         self.matrix = []
         inner = []
-        for j in range(size[0] % 40):
-            inner.append(j)
-        for i in range(size[1] % 40):
+        for j in range(size[0]//40):
+            inner.append(0)
+        for i in range(size[1]//40):
             self.matrix.append(inner)
-
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
@@ -56,9 +53,9 @@ class Field():
                 block = Rectangle(column*block_size, size[1]-block_size*row - block_size,
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
-                self.block_points.append((column*block_size, size[1]-block_size*row - block_size))
-
-
+    def print_matrix(self):
+        for rows in self.matrix:
+            print(rows)
 class Player():
     def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
         self.x = x
@@ -143,10 +140,6 @@ def menu():
         texts.print_text()
     return [menu_screen, done]
 
-
-def ground_collision(player, field):
-    pass
-
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
         bin_list = [0, 0, 0 ]
@@ -195,6 +188,7 @@ def main():
     done = False
     player = Player()
     field = Field()
+    field.print_matrix()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 0
 ### CONTROL
@@ -298,7 +292,6 @@ def main():
             # draw color matric and main rectangle
             for block in field.blocks:
                 block.draw_with_outline()
-            print(field.matrix)
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
