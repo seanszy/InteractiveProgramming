@@ -14,6 +14,8 @@ color_matrix = [BLACK, BLUE, GREEN, RED]
 text_x = 20
 text_y = 200
 jump = 0
+
+
 ### Model
 class Rectangle():
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
@@ -31,33 +33,39 @@ class Rectangle():
 
 
     def draw_shot(self):
-        self.x = self.x + 1
+        self.x = self.x
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
 class Field():
     def __init__(self, num_rows=3, color=0):
         self.blocks = []
-        self.block_points = []
         self.matrix = []
         inner = []
-        for j in range(size[0] // block_size):
-            inner.append(j)
-        for i in range(size[1] // block_size):
+        for i in range(size[1]//40):
+            inner = []
             self.matrix.append(inner)
-
+            for j in range(size[0]//40):
+                inner.append(0)
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 rectangle_color = color_matrix[color]
-                block = Rectangle(column*block_size, size[1]-block_size*row - block_size,
+                block_x = column*block_size
+                block_y = size[1]-block_size*row - block_size
+                block = Rectangle(block_x, block_y,
                               block_size, block_size, rectangle_color)
                 self.blocks.append(block)
-                self.block_points.append((column*block_size, size[1]-block_size*row - block_size))
 
+    def matrix_update(self):
+        for block in self.blocks:
+            self.matrix[int(block.y//block_size)][int(block.x//block_size)] = 1
+    def matrix_print(self):
+        for rows in self.matrix:
+            print(rows)
 
 class Player():
-    def __init__(self, x=40, y=0, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
+    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
         self.x = x
         self.y = y
         self.width = width
@@ -71,6 +79,55 @@ class Player():
 
 
     # draws the rectangles that are dropped
+    def check_left_collision(self, field):
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid)] == 1:
+        # print("Player", (self.xgrid-1), self.ygrid+2)
+            # print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            if self.x < (self.xgrid+1)*40:
+                # print(self.x)
+                self.x = (self.xgrid+1)*40
+    def check_right_collision(self, field):
+        # print("Player", (self.xgrid+1), self.ygrid+2)
+        if field.matrix[int(self.ygrid)+1][int(self.xgrid+1)] == 1:
+            # print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            if self.x > (self.xgrid)*40:
+                # print(self.x)
+                # print("GRID", self.xgrid*40)
+                # print(field.matrix[int(self.ygrid)+1][int(self.xgrid+1)])
+                self.x = (self.xgrid)*40
+    def check_top_collision(self, field):
+        if field.matrix[int(self.ygrid)][int(self.xgrid)] == 1:
+            # print("ONE")
+            # print(self.x, (self.xgrid)*40)
+            # print("Y", self.ygrid*40)
+            if self.y < (self.ygrid+1)*40:
+                # print("TRANSPORT")
+                # print(self.x)
+                # print("GRID", self.xgrid*40)
+                # print(field.matrix[int(self.ygrid)+3][int(self.xgrid+3)])
+                self.y = (self.ygrid+1)*40
+                self.velocity = self.velocity*-.5
+    def check_bottom_collision(self, field):
+        if field.matrix[int(self.ygrid)+2][int(self.xgrid)] == 1:
+            # print("ONE")
+            #print (self.x, (self.xgrid)*40)
+            # print("DETECT")
+            if self.y > (self.ygrid)*40:
+                # print("TRANSPORT")
+                # print(self.x)
+                # print("GRID", self.xgrid*40)
+                self.y = (self.ygrid)*40
+                self.velocity = 0
+                fall = 'off'
+                jump = 1
+                return jump
+
+    def player_in_grid(self):
+        self.xgrid = self.x//block_size
+        self.ygrid = self.y//block_size
+
     def draw(self):
         if self.fall == 'on':
             self.velocity += self.acceleration_constant
@@ -92,7 +149,7 @@ class Player():
 
 
     def jump(self):
-        self.velocity = -8
+        self.velocity = -12
         self.fall = 'on'
 
 
@@ -119,7 +176,7 @@ def menu():
                 done = True
             if event.key == pygame.K_p:
                 menu_screen = False
-            #if event.key == pygame.K_r:
+            # if event.key == pygame.K_r:
             #    player = Player()
     screen.fill(WHITE)
     text_list = []
@@ -140,15 +197,6 @@ def menu():
         texts.print_text()
     return [menu_screen, done]
 
-
-def ground_collision(player, field):
-    player_i = player.x//block_size
-    player_j = player.y//block_size
-    print(player_i, player_j)
-    for matrix_row in field.matrix:
-        pass
-
-
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
         bin_list = [0, 0, 0 ]
@@ -160,22 +208,38 @@ class Inventory():
         self.bin_height = bin_height
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
-    def add_to_inventory(self, block_type):
-        self.bin_list[block_type] += 1
 
-    def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index):
+    def update_bin_width(self, block_type):
+        if self.bin_list[block_type] > 9:
+            self.bin_width = 1.5*block_size
+        else:
+            self.bin_width = block_size
+
+    def add_to_inventory(self, block_type):
+        if self.bin_list[block_type] < 64:
+            self.bin_list[block_type] += 1
+        self.update_bin_width(block_type)
+        # x_bin = (mouse[0]//40)*40
+        # y_bin = (mouse[1]//40)*40
+        # self.field[y_bin][x_bin] = 0
+
+    def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
         if self.bin_list[block_type] > 0:
             self.bin_list[block_type] -= 1
-            drop_block = Rectangle(player_x, player_y, 40, 40, self.bin_list_item[current_block_index])
+            player_x_to_grid = (mouse[0]//40)*40
+            player_y_to_grid = (mouse[1]//40)*40
+            drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
             field.blocks.append(drop_block)
+            self.update_bin_width(block_type)
+
 
     def draw_inventory(self, field,  current_block_index):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
         for bin in range(len(self.bin_list)):
-            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width, self.bin_width, self.bin_height, self.bin_list_item[bin])
+            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin])
             rectangle.draw_rectangle()
-            text = Text(str(self.bin_list[bin]), self.x_pos + 5, self.y_pos + bin*self.bin_width, 40, WHITE)
+            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
             text.print_text()
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_width+60, 20, RED)
         text2.print_text()
@@ -183,9 +247,9 @@ class Inventory():
         current_block.draw_rectangle()
 
 
-#Control
+# Control ---------------------------------------------------------------------
 def main():
-    #color_matrix = [BLACK, BLUE, GREEN, RED]
+    # color_matrix = [BLACK, BLUE, GREEN, RED]
     pygame.display.set_caption("Game!")
     shoot_object_list = []
     clock = pygame.time.Clock()
@@ -199,9 +263,18 @@ def main():
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 0
-### CONTROL
+    jump = 1
+
+# CONTROL ---------------------------------------------------------------------
+
     while not done:
+        field.matrix_update()
         player.fall = 'on'
+        player.player_in_grid()
+        jump = player.check_bottom_collision(field)
+        player.check_top_collision(field)
+        player.check_left_collision(field)
+        player.check_right_collision(field)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -223,13 +296,11 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 720:
-                player.y = 720
+            if player.y >= 719:
+                player.y = 719
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
-
-            ground_collision(player, field)
 
             for event in pygame.event.get():  # User did something
 
@@ -249,11 +320,14 @@ def main():
                             player_color = 0
                         player.color = color_matrix[player_color]
 
+                    if event.key == pygame.K_o:
+                        field.matrix_print()
+
                     # inventory
                     if event.key == pygame.K_e:
                         inventory.add_to_inventory(inventory_block_index)
                     if event.key == pygame.K_r:
-                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index)
+                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
                         inventory_block_index = 0
                     if event.key == pygame.K_2:
@@ -300,8 +374,18 @@ def main():
                 shooters.draw_shot()
 
             # draw color matric and main rectangle
-            for block in field.blocks:
-                block.draw_with_outline()
+            # for block in field.blocks:
+            #    block.draw_with_outline()
+
+            row_count = -1
+            for row in field.matrix:
+                column_count = -1
+                row_count += 1
+                for column in row:
+                    column_count += 1
+                    if field.matrix[row_count][column_count] != 0:
+                        rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
+                        rectangle.draw_with_outline()
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
