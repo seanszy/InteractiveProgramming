@@ -209,31 +209,43 @@ class Inventory():
         self.bin_height = bin_height
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
-    def add_to_inventory(self, block_type):
-        self.bin_list[block_type-1] += 1
-        #x_bin = (mouse[0]//40)*40
-        #y_bin = (mouse[1]//40)*40
-        #self.field[y_bin][x_bin] = 0
+
+    def update_bin_width(self, block_type):
+        if self.bin_list[block_type-1] > 9:
+            self.bin_width = 1.5*block_size
+        else:
+            self.bin_width = block_size
+
+    def add_to_inventory(self, block_type, mouse, field):
+        if self.bin_list[block_type-1] < 64:
+            if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
+                self.bin_list[block_type-1] += 1
+                x_bin = (mouse[0]//40)*40
+                y_bin = (mouse[1]//40)*40
+                field.matrix[mouse[1]//40][mouse[0]//40] = 0
+                self.update_bin_width(block_type)
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
-        if self.bin_list[block_type-1] > 0:
-            self.bin_list[block_type-1] -= 1
-            player_x_to_grid = (mouse[0]//40)*40
-            player_y_to_grid = (mouse[1]//40)*40
-            drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
-            field.blocks.append(drop_block)
+        if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+            if self.bin_list[block_type-1] > 0:
+                self.bin_list[block_type-1] -= 1
+                mouse_x_to_grid = (mouse[0]//40)*40
+                mouse_y_to_grid = (mouse[1]//40)*40
+                drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                field.blocks.append(drop_block)
+        self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
         for bin in range(len(self.bin_list)):
-            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
+            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
             rectangle.draw_rectangle()
-            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_width, 40, WHITE)
+            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
             text.print_text()
-        text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_width+60, 20, RED)
+        text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
         text2.print_text()
-        current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_width + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
+        current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
         current_block.draw_rectangle()
 
 
@@ -256,7 +268,6 @@ def main():
     jump = 1
 ### CONTROL
     while not done:
-        print(inventory_block_index)
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
@@ -315,7 +326,7 @@ def main():
 
                     # inventory
                     if event.key == pygame.K_e:
-                        inventory.add_to_inventory(inventory_block_index)
+                        inventory.add_to_inventory(inventory_block_index, mouse, field)
                     if event.key == pygame.K_r:
                         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
@@ -373,7 +384,6 @@ def main():
                 row_count += 1
                 for column in row:
                     column_count+=1
-                    #print(row_count, column_count)
                     if field.matrix[row_count][column_count] != 0:
                         rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
                         rectangle.draw_with_outline()
