@@ -210,12 +210,15 @@ class Inventory():
         self.bin_list_item = bin_list_item
     def add_to_inventory(self, block_type):
         self.bin_list[block_type] += 1
+        #x_bin = (mouse[0]//40)*40
+        #y_bin = (mouse[1]//40)*40
+        #self.field[y_bin][x_bin] = 0
 
-    def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index):
+    def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
         if self.bin_list[block_type] > 0:
             self.bin_list[block_type] -= 1
-            player_x_to_grid = (player_x//40)*40
-            player_y_to_grid = (player_y//40)*40+40
+            player_x_to_grid = (mouse[0]//40)*40
+            player_y_to_grid = (mouse[1]//40)*40
             drop_block = Rectangle(player_x_to_grid, player_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
             field.blocks.append(drop_block)
 
@@ -312,7 +315,7 @@ def main():
                     if event.key == pygame.K_e:
                         inventory.add_to_inventory(inventory_block_index)
                     if event.key == pygame.K_r:
-                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index)
+                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
                         inventory_block_index = 0
                     if event.key == pygame.K_2:
@@ -359,8 +362,19 @@ def main():
                 shooters.draw_shot()
 
             # draw color matric and main rectangle
-            for block in field.blocks:
-                block.draw_with_outline()
+            #for block in field.blocks:
+            #    block.draw_with_outline()
+
+            row_count = -1
+            for row in field.matrix:
+                column_count = -1
+                row_count += 1
+                for column in row:
+                    column_count+=1
+                    print(row_count, column_count)
+                    if field.matrix[row_count][column_count] != 0:
+                        rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
+                        rectangle.draw_with_outline()
 
             inventory.draw_inventory(field, inventory_block_index)
             player.draw()
