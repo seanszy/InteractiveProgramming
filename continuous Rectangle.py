@@ -137,7 +137,7 @@ class Player():
         if self.x%40 == 0:
             if self.y%40 == 0:
                 print("in line")
-                if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 :
+                if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0:
                     print("STUCK")
                     return False
                 else:
@@ -152,8 +152,20 @@ class Player():
 
     def right_collision(self, field):
         if self.x%40 == 0:
-            if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
+            if self.y%40 == 0:
+                print("in line")
+                if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
+                    print("STUCK")
+                    return False
+                else:
+                    return True
+            elif field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] != 0:
+                print("FALSE 2")
+                return False
+            else:
                 return True
+        else:
+            return True
 
     def top_collision(self, field):
         if self.x%40 == 0:
@@ -327,6 +339,8 @@ def main():
             clock.tick(40)
             keys = pygame.key.get_pressed()
             player.left = 'off'
+            player.right = 'off'
+
             if keys[pygame.K_LEFT]:
                 player_left_move = player.left_collision(field)
                 print(player_left_move)
@@ -335,10 +349,10 @@ def main():
                 else:
                     player.left = 'off'
             if keys[pygame.K_RIGHT]:
-                if player.right_collision(field):
+                player_right_move = player.right_collision(field)
+                print(player_right_move)
+                if player_right_move is True:
                     player.right = 'on'
-            else:
-                player.right = 'off'
 
             if player.y >= 720: # 839
 
