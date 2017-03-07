@@ -42,7 +42,7 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
-        for i in range(size[1]//40):
+        for i in range(size[1]//40+1):
             inner = []
             self.matrix.append(inner)
             for j in range(size[0]//40):
@@ -121,7 +121,7 @@ class Player():
                 #print("GRID", self.xgrid*40)
                 self.y = (self.ygrid)*40
                 self.velocity = 0
-                fall = 'off'
+                self.fall = 'off'
                 jump = 1
                 return jump
 
@@ -296,11 +296,14 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 719:
-                player.y = 719
+            print(player.y)
+
+            if player.y >= 839:
+                player.y = 839
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
+
 
             for event in pygame.event.get():  # User did something
 
