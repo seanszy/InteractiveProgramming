@@ -146,7 +146,7 @@ class Player():
     def right_collision(self, field):
         if self.x%40 == 0:
             if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
-                print("BLOCK RIGHT")
+                return True
 
     def top_collision(self, field):
         if self.x%40 == 0:
@@ -328,11 +328,12 @@ def main():
                 player.left = 'off'
 
             if keys[pygame.K_RIGHT]:
-                player.right = 'on'
+                if player.right_collision(field):
+                    player.right = 'on'
             else:
                 player.right = 'off'
 
-            if player.y >= 720: #839
+            if player.y >= 720: # 839
 
                 player.y = 720
                 player.velocity = 0
