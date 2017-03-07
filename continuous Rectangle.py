@@ -125,13 +125,15 @@ class Player():
     def bottom_collision(self, field):
         if self.x%40 == 0:
             if field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0:
-                print("BLOCK BASE")
+                self.fall = "off"
+                self.velocity = 0
             else:
-                print("BLOCK FALL")
+                self.fall = 'on'
         elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)+2][int(self.xgrid+1)] != 0:
-            print("BLOCK BOTTOM")
+            self.fall = "off"
+            self.velocity = 0
         else:
-            print("BLOCK FALL")
+            self.fall = "on"
 
     def left_collision(self, field):
         if self.x%40 == 0:
@@ -316,6 +318,7 @@ def main():
         player.player_in_grid()
         player.left_collision(field)
         player.top_collision(field)
+        player.bottom_collision(field)
         print(player.xgrid, player.ygrid)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
