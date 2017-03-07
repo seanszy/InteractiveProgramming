@@ -253,11 +253,7 @@ class Inventory():
 def main():
     #color_matrix = [BLACK, BLUE, GREEN, RED]
     pygame.display.set_caption("Game!")
-    shoot_object_list = []
     clock = pygame.time.Clock()
-    rectangles_x = 100
-    rectangles_y = 100
-    rectangle_list = []
     player_color = 0
     menu_screen = True
     done = False
@@ -284,8 +280,7 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_DOWN]:
-                rectangles_y += 3
+
             if keys[pygame.K_LEFT]:
                 player.left = 'on'
             else:
@@ -323,7 +318,6 @@ def main():
                             player_color = 0
                         player.color = color_matrix[player_color]
 
-
                     if event.key == pygame.K_o:
                         field.matrix_print()
 
@@ -339,27 +333,6 @@ def main():
                     if event.key == pygame.K_3:
                         inventory_block_index = 3
 
-                    # make shoot object
-                    if event.key == pygame.K_f:
-                        draw_rectangle_x = player.x
-                        draw_rectangle_y = player.y
-                        rectangle_color = color_matrix[player_color]
-                        rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                        shoot_object_list.append(rectangle)
-
-                    # make rectangle object
-                    if event.key == pygame.K_g:
-                            draw_rectangle_x = player.x
-                            draw_rectangle_y = player.y
-                            rectangle_color = color_matrix[player_color]
-                            rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                            rectangle_list.append(rectangle)
-
-                    # clear objects
-                    if event.key == pygame.K_z:
-                            rectangle_list = []
-                            shoot_object_list = []
-
                     if event.key == pygame.K_q:
                         pygame.quit()
                         return
@@ -367,18 +340,8 @@ def main():
             # View-------------------------------------------------------------
             screen.fill(WHITE)
 
-            # draw text
-
-            # draw rectangle objects
-            for rectangles in rectangle_list:
-                rectangles.draw_with_outline()
-
-            # draw shooter objects
-            for shooters in shoot_object_list:
-                shooters.draw_shot()
-
             # draw color matric and main rectangle
-            #for block in field.blocks:
+            # for block in field.blocks:
             #    block.draw_with_outline()
 
             row_count = -1
