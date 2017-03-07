@@ -42,7 +42,7 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
-        for i in range(size[1]//40 + 1):
+        for i in range(size[1]//40+1):
             inner = []
             self.matrix.append(inner)
             for j in range(size[0]//40):
@@ -121,7 +121,7 @@ class Player():
                 #print("GRID", self.xgrid*40)
                 self.y = (self.ygrid)*40
                 self.velocity = 0
-                fall = 'off'
+                self.fall = 'off'
                 jump = 1
                 return jump
     def bottom_collioin(self, field):
@@ -267,11 +267,7 @@ class Inventory():
 def main():
     #color_matrix = [BLACK, BLUE, GREEN, RED]
     pygame.display.set_caption("Game!")
-    shoot_object_list = []
     clock = pygame.time.Clock()
-    rectangles_x = 100
-    rectangles_y = 100
-    rectangle_list = []
     player_color = 0
     menu_screen = True
     done = False
@@ -299,8 +295,7 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_DOWN]:
-                rectangles_y += 3
+
             if keys[pygame.K_LEFT]:
                 player.left = 'on'
             else:
@@ -310,6 +305,7 @@ def main():
                 player.right = 'on'
             else:
                 player.right = 'off'
+
 
             if player.y >= 720: #839
                 player.y = 720
@@ -339,7 +335,6 @@ def main():
                             player_color = 0
                         player.color = color_matrix[player_color]
 
-
                     if event.key == pygame.K_o:
                         field.matrix_print()
                     # inventory
@@ -357,18 +352,8 @@ def main():
             # View-------------------------------------------------------------
             screen.fill(WHITE)
 
-            # draw text
-
-            # draw rectangle objects
-            for rectangles in rectangle_list:
-                rectangles.draw_with_outline()
-
-            # draw shooter objects
-            for shooters in shoot_object_list:
-                shooters.draw_shot()
-
             # draw color matric and main rectangle
-            #for block in field.blocks:
+            # for block in field.blocks:
             #    block.draw_with_outline()
 
             row_count = -1
