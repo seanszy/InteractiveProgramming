@@ -123,10 +123,22 @@ class Player():
                 self.fall = 'off'
                 jump = 1
                 return jump
-    def bottom_collioin(self, field):
-        pass
+    def bottom_collision(self, field):
+        if self.x%40 == 0:
+            if field.matrix[int(self.ygrid+2)][int(self.xgrid)]:
+                print("BLOCK BOTTOM")
+        else:
+            field.matrix[int(self.ygrid+2)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)+2][int(self.xgrid+1)] != 0
+            print("BLOCK BOTTOM")
     def left_collision(self, field):
-        pass
+        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
+            print("BLOCK LEFT")
+    def right_collision(self, field):
+        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
+            print("BLOCK LEFT")
+    def top_collision(self, field):
+        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
+            print("BLOCK LEFT")
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -240,12 +252,12 @@ class Inventory():
         player_y_grid = player_y //40
         if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
             if self.bin_list[block_type-1] > 0:
-                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid):
-                    self.bin_list[block_type-1] -= 1
-                    mouse_x_to_grid = (mouse[0]//40)*40
-                    mouse_y_to_grid = (mouse[1]//40)*40
-                    drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
-                    field.blocks.append(drop_block)
+                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) < 5:
+                        self.bin_list[block_type-1] -= 1
+                        mouse_x_to_grid = (mouse[0]//40)*40
+                        mouse_y_to_grid = (mouse[1]//40)*40
+                        drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                        field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index):
@@ -260,7 +272,6 @@ class Inventory():
         text2.print_text()
         current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
         current_block.draw_rectangle()
-
 
 #Control
 def main():
@@ -280,7 +291,8 @@ def main():
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
-
+        player.bottom_collision(field)
+        print(player.xgrid, player.ygrid)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -307,7 +319,6 @@ def main():
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
-            print(mouse2[0])
             if mouse2[0] == 1:
                 inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
             if mouse2[2] == 1:
