@@ -65,7 +65,7 @@ class Field():
             print(rows)
 
 class Player():
-    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off'):
+    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off',jump=0):
         self.x = x
         self.y = y
         self.width = width
@@ -76,9 +76,11 @@ class Player():
         self.left = left
         self.right = right
         self.acceleration_constant = .6
+        self.jump = jump
 
 
-    def bottom_collision(self, field, next_y,jump):
+    def bottom_collision(self, field, next_y):
+        self.jump = 1
         # nexty_index = (self.y + next_y)//40
         # print(next_y,nexty_index)
         # if self.y + next_y > self.ygrid*40:
@@ -96,12 +98,16 @@ class Player():
         #         jump = 1
         #         self.y = (self.ygrid+1)*40
         # return jump
-        if self.x%40 == 0:
+        if self.x % 40 == 0:
             if field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0:
                 self.fall = "off"
                 self.velocity = 0
                 self.y = (self.ygrid)*40
-                jump = 1
+        elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
+            self.fall = "off"
+            self.velocity = 0
+            self.y = (self.ygrid)*40
+
     def left_collision(self, field):
         if self.x%40 == 0:
             if self.y%40 == 0:
@@ -145,7 +151,6 @@ class Player():
             self.y = self.ygrid*40
         else:
             self.fall = "on"
-        return jump
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -171,7 +176,7 @@ class Player():
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
 
-    def jump(self):
+    def jumps(self):
         self.velocity = -12
         self.fall = 'on'
 
@@ -292,15 +297,15 @@ def main():
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 2
-    jump = 1
 ### CONTROL
     while not done:
+        player.fall = 'on'
         field.matrix_update(inventory_block_index)
         next_y = player.velocity
         player.player_in_grid()
         player.left_collision(field)
         #player.top_collision(field,next_y)
-        #jump = player.bottom_collision(field, next_y,jump)
+        player.bottom_collision(field, next_y)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -328,7 +333,7 @@ def main():
 
                 player.y = 839
                 player.velocity = 0
-                jump = 1
+                player.jump = 1
                 player.fall = 'off'
             if mouse2[0] == 1:
                 inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
@@ -341,9 +346,9 @@ def main():
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        if jump == 1:
-                            player.jump()
-                        jump = 0
+                        if player.jump == 1:
+                            player.jumps()
+                        player.jump = 0
                     if event.key == pygame.K_p:
                         menu_screen = True
                     if event.key == pygame.K_c:
