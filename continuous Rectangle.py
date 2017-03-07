@@ -297,7 +297,7 @@ def main():
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
-        player.bottom_collision(field)
+        player.top_collision(field)
         print(player.xgrid, player.ygrid)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
