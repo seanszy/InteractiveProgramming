@@ -124,6 +124,10 @@ class Player():
                 fall = 'off'
                 jump = 1
                 return jump
+    def bottom_collioin(self, field):
+        pass
+    def left_collision(self, field):
+        pass
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -281,10 +285,11 @@ def main():
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
-        jump = player.check_bottom_collision(field)
-        player.check_top_collision(field)
-        player.check_left_collision(field)
-        player.check_right_collision(field)
+        #jump = player.check_bottom_collision(field)
+        #player.check_top_collision(field)
+        #player.check_left_collision(field)
+        #player.check_right_collision(field)
+        player.left_collision(field)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -306,12 +311,16 @@ def main():
             else:
                 player.right = 'off'
 
-            if player.y >= 839:
-                player.y = 839
+            if player.y >= 720: #839
+                player.y = 720
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
-            print(player.y)
+            print(mouse2[0])
+            if mouse2[0] == 1:
+                inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
+            if mouse2[2] == 1:
+                inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
             for event in pygame.event.get():  # User did something
 
                 if event.type == pygame.QUIT:  # If user hit q or closed
@@ -333,39 +342,13 @@ def main():
 
                     if event.key == pygame.K_o:
                         field.matrix_print()
-
                     # inventory
-                    if event.key == pygame.K_e:
-                        inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
-                    if event.key == pygame.K_r:
-                        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
                     if event.key == pygame.K_1:
                         inventory_block_index = 1
                     if event.key == pygame.K_2:
                         inventory_block_index = 2
                     if event.key == pygame.K_3:
                         inventory_block_index = 3
-
-                    # make shoot object
-                    if event.key == pygame.K_f:
-                        draw_rectangle_x = player.x
-                        draw_rectangle_y = player.y
-                        rectangle_color = color_matrix[player_color]
-                        rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                        shoot_object_list.append(rectangle)
-
-                    # make rectangle object
-                    if event.key == pygame.K_g:
-                            draw_rectangle_x = player.x
-                            draw_rectangle_y = player.y
-                            rectangle_color = color_matrix[player_color]
-                            rectangle = Rectangle(draw_rectangle_x, draw_rectangle_y+5, 10, 10, rectangle_color)
-                            rectangle_list.append(rectangle)
-
-                    # clear objects
-                    if event.key == pygame.K_z:
-                            rectangle_list = []
-                            shoot_object_list = []
 
                     if event.key == pygame.K_q:
                         pygame.quit()
