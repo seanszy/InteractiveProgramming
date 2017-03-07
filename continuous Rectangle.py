@@ -138,8 +138,9 @@ class Player():
             print("BLOCK LEFT")
 
     def right_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
-            print("BLOCK RIGHT")
+        if self.x%40 == 0:
+            if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
+                print("BLOCK RIGHT")
 
     def top_collision(self, field):
         if self.x%40 == 0:
@@ -300,7 +301,7 @@ def main():
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
-        player.top_collision(field)
+        player.right_collision(field)
         print(player.xgrid, player.ygrid)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
