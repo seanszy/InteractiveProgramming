@@ -125,21 +125,27 @@ class Player():
                 return jump
     def bottom_collision(self, field):
         if self.x%40 == 0:
-            if field.matrix[int(self.ygrid+2)][int(self.xgrid)]:
-                print("BLOCK BOTTOM")
-        else:
-            field.matrix[int(self.ygrid+2)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)+2][int(self.xgrid+1)] != 0
+            if field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0:
+                print("BLOCK BASE")
+            else:
+                print("BLOCK FALL")
+        elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)+2][int(self.xgrid+1)] != 0:
             print("BLOCK BOTTOM")
+        else:
+            print("BLOCK FALL")
     def left_collision(self, field):
         if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
             print("BLOCK LEFT")
     def right_collision(self, field):
         if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
-            print("BLOCK LEFT")
+            print("BLOCK RIGHT")
     def top_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
-            print("BLOCK LEFT")
-
+        if self.x%40 == 0:
+            if field.matrix[int(self.ygrid-1)][int(self.xgrid)] != 0:
+                print("BLOCK TOP")
+        else:
+            field.matrix[int(self.ygrid-1)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)-1][int(self.xgrid+1)] != 0
+            print("BLOCK TOP")
     def player_in_grid(self):
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
