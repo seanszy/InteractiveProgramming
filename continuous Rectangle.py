@@ -136,6 +136,12 @@ class Player():
     def left_collision(self, field):
         if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
             print("BLOCK LEFT")
+            difference = self.x - self.xgrid*40
+            print(difference)
+            if difference >= 4:
+                return True
+            else:
+                return False
 
     def right_collision(self, field):
         if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
@@ -245,7 +251,7 @@ class Inventory():
         mouse_y_grid = mouse [1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
-        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid):
+        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) <5:
             if self.bin_list[block_type-1] < 64:
                 if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                     self.bin_list[block_type-1] += 1
@@ -300,6 +306,7 @@ def main():
         field.matrix_update(inventory_block_index)
         player.fall = 'on'
         player.player_in_grid()
+        player.left_collision(field)
         player.top_collision(field)
         print(player.xgrid, player.ygrid)
         mouse = pygame.mouse.get_pos()
@@ -313,7 +320,9 @@ def main():
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_LEFT]:
-                player.left = 'on'
+                player_left_move = player.left_collision(field)
+                if player_left_move:
+                    player.left = 'on'
             else:
                 player.left = 'off'
 
