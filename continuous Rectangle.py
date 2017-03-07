@@ -77,75 +77,39 @@ class Player():
         self.right = right
         self.acceleration_constant = .6
 
-    # draws the rectangles that are dropped
-    def check_left_collision(self, field):
-        if field.matrix[int(self.ygrid)+1][int(self.xgrid)] != 0:
-        #print("Player", (self.xgrid-1), self.ygrid+2)
-            #print("ONE")
-            #print (self.x, (self.xgrid)*40)
-            if self.x < (self.xgrid+1)*40:
-                #print(self.x)
-                self.x = (self.xgrid+1)*40
-    def check_right_collision(self, field):
-        #print("Player", (self.xgrid+1), self.ygrid+2)
-        if field.matrix[int(self.ygrid)+1][int(self.xgrid+1)] != 0:
-            #print("ONE")
-            #print (self.x, (self.xgrid)*40)
-            if self.x > (self.xgrid)*40:
-                #print(self.x)
-                #print("GRID", self.xgrid*40)
-                #print(field.matrix[int(self.ygrid)+1][int(self.xgrid+1)])
-                self.x = (self.xgrid)*40
-    def check_top_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
-            #print("ONE")
-            #print (self.x, (self.xgrid)*40)
-            #print("Y", self.ygrid*40)
-            if self.y < (self.ygrid+1)*40:
-                #print("TRANSPORT")
-                #print(self.x)
-                #print("GRID", self.xgrid*40)
-                #print(field.matrix[int(self.ygrid)+3][int(self.xgrid+3)])
-                self.y = (self.ygrid+1)*40
-                self.velocity = self.velocity*-.5
-    def check_bottom_collision(self, field):
-        if field.matrix[int(self.ygrid)+2][int(self.xgrid)] != 0:
-            #print("ONE")
-            #print (self.x, (self.xgrid)*40)
-            #print("DETECT")
-            if self.y > (self.ygrid)*40:
-                #print("TRANSPORT")
-                #print(self.x)
-                #print("GRID", self.xgrid*40)
-                self.y = (self.ygrid)*40
-                self.velocity = 0
-                self.fall = 'off'
-                jump = 1
-                return jump
-    def bottom_collision(self, field):
+
+    def bottom_collision(self, field, next_y,jump):
+        # nexty_index = (self.y + next_y)//40
+        # print(next_y,nexty_index)
+        # if self.y + next_y > self.ygrid*40:
+        #     if self.x%40 == 0:
+        #         if field.matrix[int(nexty_index+2)][int(self.xgrid)] !=0:
+        #             self.fall = "off"
+        #             self.velocity = 0
+        #             self.y = (self.ygrid+1)*40
+        #             jump = 1
+        #         else:
+        #             self.fall = 'on'
+        #     elif field.matrix[int(nexty_index+2)][int(self.xgrid)] != 0 or field.matrix[int(nexty_index)+1][int(self.xgrid+1)] != 0:
+        #         self.fall = "off"
+        #         self.velocity = 0
+        #         jump = 1
+        #         self.y = (self.ygrid+1)*40
+        # return jump
         if self.x%40 == 0:
             if field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0:
                 self.fall = "off"
                 self.velocity = 0
-            else:
-                self.fall = 'on'
-        elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)+2][int(self.xgrid+1)] != 0:
-            self.fall = "off"
-            self.velocity = 0
-        else:
-            self.fall = "on"
-
+                self.y = (self.ygrid)*40
+                jump = 1
     def left_collision(self, field):
         if self.x%40 == 0:
             if self.y%40 == 0:
-                print("in line")
                 if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0:
-                    print("STUCK")
                     return False
                 else:
                     return True
             elif field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid-1)] != 0:
-                print("FALSE 2")
                 return False
             else:
                 return True
@@ -155,27 +119,33 @@ class Player():
     def right_collision(self, field):
         if self.x%40 == 0:
             if self.y%40 == 0:
-                print("in line")
                 if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
-                    print("STUCK")
                     return False
                 else:
                     return True
             elif field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] != 0:
-                print("FALSE 2")
                 return False
             else:
                 return True
         else:
             return True
 
-    def top_collision(self, field):
+    def top_collision(self, field, next_y):
+        nexty_index = (self.y + next_y)//40
         if self.x%40 == 0:
-            if field.matrix[int(self.ygrid-1)][int(self.xgrid)] != 0:
-                print("BLOCK TOP")
+            if field.matrix[int(nexty_index)][int(self.xgrid)] !=0:
+                self.fall = "off"
+                self.velocity = -.5*self.velocity
+                self.y = self.ygrid*40
+            else:
+                self.fall = 'on'
+        elif field.matrix[int(nexty_index)][int(self.xgrid)] != 0 or field.matrix[int(nexty_index)][int(self.xgrid+1)] != 0:
+            self.fall = "off"
+            self.velocity = -.5*self.velocity
+            self.y = self.ygrid*40
         else:
-            field.matrix[int(self.ygrid-1)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)-1][int(self.xgrid+1)] != 0
-            print("BLOCK TOP")
+            self.fall = "on"
+        return jump
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -326,12 +296,11 @@ def main():
 ### CONTROL
     while not done:
         field.matrix_update(inventory_block_index)
-        player.fall = 'on'
+        next_y = player.velocity
         player.player_in_grid()
         player.left_collision(field)
-        player.top_collision(field)
-        player.bottom_collision(field)
-        print(player.xgrid, player.ygrid)
+        #player.top_collision(field,next_y)
+        #jump = player.bottom_collision(field, next_y,jump)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         if menu_screen is True:
@@ -346,20 +315,18 @@ def main():
 
             if keys[pygame.K_LEFT]:
                 player_left_move = player.left_collision(field)
-                print(player_left_move)
                 if player_left_move is True:
                     player.left = 'on'
                 else:
                     player.left = 'off'
             if keys[pygame.K_RIGHT]:
                 player_right_move = player.right_collision(field)
-                print(player_right_move)
                 if player_right_move is True:
                     player.right = 'on'
 
-            if player.y >= 720: # 839
+            if player.y >= 839:
 
-                player.y = 720
+                player.y = 839
                 player.velocity = 0
                 jump = 1
                 player.fall = 'off'
