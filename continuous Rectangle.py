@@ -144,8 +144,9 @@ class Player():
                 return False
 
     def right_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
-            print("BLOCK RIGHT")
+        if self.x%40 == 0:
+            if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
+                print("BLOCK RIGHT")
 
     def top_collision(self, field):
         if self.x%40 == 0:
