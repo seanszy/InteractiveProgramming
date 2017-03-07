@@ -134,14 +134,21 @@ class Player():
             print("BLOCK FALL")
 
     def left_collision(self, field):
-        if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid)+1][int(self.xgrid-1)] != 0 :
-            print("BLOCK LEFT")
-            difference = self.x - self.xgrid*40
-            print(difference)
-            if difference >= 4:
-                return True
-            else:
+        if self.x%40 == 0:
+            if self.y%40 == 0:
+                print("in line")
+                if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 :
+                    print("STUCK")
+                    return False
+                else:
+                    return True
+            elif field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid-1)] != 0:
+                print("FALSE 2")
                 return False
+            else:
+                return True
+        else:
+            return True
 
     def right_collision(self, field):
         if self.x%40 == 0:
@@ -319,14 +326,14 @@ def main():
         if menu_screen is False:
             clock.tick(40)
             keys = pygame.key.get_pressed()
-
+            player.left = 'off'
             if keys[pygame.K_LEFT]:
                 player_left_move = player.left_collision(field)
-                if player_left_move:
+                print(player_left_move)
+                if player_left_move is True:
                     player.left = 'on'
-            else:
-                player.left = 'off'
-
+                else:
+                    player.left = 'off'
             if keys[pygame.K_RIGHT]:
                 player.right = 'on'
             else:
