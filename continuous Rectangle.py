@@ -250,7 +250,7 @@ class Inventory():
         mouse_y_grid = mouse [1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
-        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) <5:
+        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
             if self.bin_list[block_type-1] < 64:
                 if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                     self.bin_list[block_type-1] += 1
@@ -266,7 +266,7 @@ class Inventory():
         player_y_grid = player_y //40
         if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
             if self.bin_list[block_type-1] > 0:
-                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) < 5:
+                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
                         self.bin_list[block_type-1] -= 1
                         mouse_x_to_grid = (mouse[0]//40)*40
                         mouse_y_to_grid = (mouse[1]//40)*40
