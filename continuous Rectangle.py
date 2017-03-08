@@ -140,21 +140,14 @@ class Player():
         else:
             return True
 
-    def top_collision(self, field, next_y):
-        nexty_index = (self.y + next_y)//40
-        if self.x%40 == 0:
-            if field.matrix[int(nexty_index)][int(self.xgrid)] !=0:
-                self.fall = "off"
-                self.velocity = -.5*self.velocity
-                self.y = self.ygrid*40
-            else:
-                self.fall = 'on'
-        elif field.matrix[int(nexty_index)][int(self.xgrid)] != 0 or field.matrix[int(nexty_index)][int(self.xgrid+1)] != 0:
-            self.fall = "off"
-            self.velocity = -.5*self.velocity
-            self.y = self.ygrid*40
-        else:
-            self.fall = "on"
+    def top_collision(self, field):
+        if self.x % 40 == 0:
+            if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
+                self.y = self.ygrid
+                self.velocity = self.velocity * -.5
+        elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
+            self.velocity = self.velocity * -.5
+            self.velocity = self.velocity * -.5
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -253,7 +246,7 @@ class Inventory():
         player_x_grid = player_x//40
         player_y_grid = player_y//40
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) <5:
+        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
             if self.bin_list[block_type-1] < 64:
                 if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                     self.bin_list[block_type-1] += 1
@@ -269,7 +262,7 @@ class Inventory():
         player_y_grid = player_y //40
         if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
             if self.bin_list[block_type-1] > 0:
-                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) < 5:
+                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
                         self.bin_list[block_type-1] -= 1
                         mouse_x_to_grid = (mouse[0]//40)*40
                         mouse_y_to_grid = (mouse[1]//40)*40
@@ -309,7 +302,7 @@ def main():
     player = Player()
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
-    inventory_block_index = 2
+    inventory_block_index = 1
     img = pygame.image.load('amon.png')
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
@@ -321,7 +314,7 @@ def main():
         next_y = player.velocity
         player.player_in_grid()
         player.left_collision(field)
-        #player.top_collision(field,next_y)
+        player.top_collision(field)
         player.bottom_collision(field, next_y)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
@@ -335,20 +328,20 @@ def main():
             player.left = 'off'
             player.right = 'off'
 
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 player_left_move = player.left_collision(field)
                 if player_left_move is True:
                     player.left = 'on'
                 else:
                     player.left = 'off'
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 player_right_move = player.right_collision(field)
                 if player_right_move is True:
                     player.right = 'on'
 
-            if player.y >= 839:
+            if player.y >= 840:
 
-                player.y = 839
+                player.y = 840
                 player.velocity = 0
                 player.jump = 1
                 player.fall = 'off'
@@ -362,7 +355,7 @@ def main():
                     done = True
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_w:
                         if player.jump == 1:
                             player.jumps()
                         player.jump = 0
