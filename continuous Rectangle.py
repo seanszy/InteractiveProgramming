@@ -50,7 +50,7 @@ class Field():
                 inner.append(0)
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
-                self.matrix[row+20][column] = row+1
+                self.matrix[row+19][column] = row+1
 
         self. matrix[15][15] = 5
         self.matrix_print()
