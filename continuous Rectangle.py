@@ -257,18 +257,41 @@ class Inventory():
                         self.update_bin_width(block_type)
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
+        print(mouse)
         mouse_x_grid = mouse[0] // 40
         mouse_y_grid = mouse [1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y //40
-        if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
-            if self.bin_list[block_type-1] > 0:
-                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
-                        self.bin_list[block_type-1] -= 1
-                        mouse_x_to_grid = (mouse[0]//40)*40
-                        mouse_y_to_grid = (mouse[1]//40)*40
-                        drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
-                        field.blocks.append(drop_block)
+        if player_x%40 == 0:
+            check_top_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
+            check_bottom_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1)
+            print(check_top_player, check_bottom_player)
+            if (check_top_player== False) and (check_bottom_player== False):
+                if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+                    if self.bin_list[block_type-1] > 0:
+                        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                                self.bin_list[block_type-1] -= 1
+                                mouse_x_to_grid = (mouse[0]//40)*40
+                                mouse_y_to_grid = (mouse[1]//40)*40
+                                drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                                field.blocks.append(drop_block)
+        else:
+            print("HEY")
+            check_top_left_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
+            check_top_right_player =((mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1))
+            check_bottom_left_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid)
+            check_bottom_right_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid+1)
+            print(check_top_left_player, check_top_right_player, check_bottom_left_player, check_bottom_right_player)
+            if (check_top_left_player == False) and (check_top_right_player == False):
+                if (check_bottom_left_player== False) and (check_bottom_right_player== False):
+                    if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+                        if self.bin_list[block_type-1] > 0:
+                            if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                                    self.bin_list[block_type-1] -= 1
+                                    mouse_x_to_grid = (mouse[0]//40)*40
+                                    mouse_y_to_grid = (mouse[1]//40)*40
+                                    drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                                    field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock):
