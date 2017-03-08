@@ -138,21 +138,14 @@ class Player():
         else:
             return True
 
-    def top_collision(self, field, next_y):
-        nexty_index = (self.y + next_y)//40
-        if self.x%40 == 0:
-            if field.matrix[int(nexty_index)][int(self.xgrid)] !=0:
-                self.fall = "off"
-                self.velocity = -.5*self.velocity
-                self.y = self.ygrid*40
-            else:
-                self.fall = 'on'
-        elif field.matrix[int(nexty_index)][int(self.xgrid)] != 0 or field.matrix[int(nexty_index)][int(self.xgrid+1)] != 0:
-            self.fall = "off"
-            self.velocity = -.5*self.velocity
-            self.y = self.ygrid*40
-        else:
-            self.fall = "on"
+    def top_collision(self, field):
+        if self.x % 40 == 0:
+            if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
+                self.y = self.ygrid
+                self.velocity = self.velocity * -.5
+        elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
+            self.velocity = self.velocity * -.5
+            self.velocity = self.velocity * -.5
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -309,7 +302,7 @@ def main():
         next_y = player.velocity
         player.player_in_grid()
         player.left_collision(field)
-        #player.top_collision(field,next_y)
+        player.top_collision(field)
         player.bottom_collision(field, next_y)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
@@ -334,9 +327,9 @@ def main():
                 if player_right_move is True:
                     player.right = 'on'
 
-            if player.y >= 839:
+            if player.y >= 840:
 
-                player.y = 839
+                player.y = 840
                 player.velocity = 0
                 player.jump = 1
                 player.fall = 'off'
