@@ -38,20 +38,20 @@ class Rectangle():
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
 class Field():
-    def __init__(self, num_rows=3, color=0):
+    def __init__(self, num_rows=4, color=0):
         self.blocks = []
         self.matrix = []
         inner = []
         for i in range(size[1]//40+1):
             inner = []
             self.matrix.append(inner)
-            for j in range(size[0]//40):
+            for j in range(size[0]//40+1):
                 inner.append(0)
 
         print(num_rows)
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
-                self.matrix[row+20][column] = row+1
+                self.matrix[row+19][column] = row+1
                 #rectangle_color = color_matrix[1]
                 #block_x = column*block_size
                 #block_y = size[1]-block_size*row - block_size
@@ -68,7 +68,7 @@ class Field():
             print(rows)
 
 class Player():
-    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off',jump=0):
+    def __init__(self, x=40, y=660, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off',jump=0):
         self.x = x
         self.y = y
         self.width = width
@@ -224,7 +224,7 @@ def menu():
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0 ]
+        bin_list = [0, 0, 0]
         bin_list_item = [BLACK, RED, BLACK, GREEN]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -246,14 +246,15 @@ class Inventory():
         player_x_grid = player_x//40
         player_y_grid = player_y//40
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
-            if self.bin_list[block_type-1] < 64:
-                if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
-                    self.bin_list[block_type-1] += 1
-                    x_bin = (mouse[0]//40)*40
-                    y_bin = (mouse[1]//40)*40
-                    field.matrix[mouse[1]//40][mouse[0]//40] = 0
-                    self.update_bin_width(block_type)
+        if block_type != 4:
+            if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
+                if self.bin_list[block_type-1] < 64:
+                    if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
+                        self.bin_list[block_type-1] += 1
+                        x_bin = (mouse[0]//40)*40
+                        y_bin = (mouse[1]//40)*40
+                        field.matrix[mouse[1]//40][mouse[0]//40] = 0
+                        self.update_bin_width(block_type)
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
         mouse_x_grid = mouse[0] // 40
@@ -270,7 +271,7 @@ class Inventory():
                         field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
-    def draw_inventory(self, field,  current_block_index, grass, stone, dirt):
+    def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
         image_list = [grass, dirt, stone]
@@ -283,6 +284,8 @@ class Inventory():
                 screen.blit(dirt,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 3:
                 screen.blit(stone,(self.x_pos, self.y_pos + bin*self.bin_height))
+            if bin+1 == 4:
+                screen.blit(bedrock,(self.x_pos, self.y_pos + bin*self.bin_height))
             text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
             text.print_text()
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
@@ -307,6 +310,7 @@ def main():
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
     dirt = pygame.image.load("dirt.png")
+    bedrock = pygame.image.load("bedrock.png")
 ### CONTROL
     while not done:
         player.fall = 'on'
@@ -339,8 +343,14 @@ def main():
                 if player_right_move is True:
                     player.right = 'on'
 
+            #left
+            if player.x <= 0:
+                player.x = 0
+                player.jump = 1
+            if player.x >= 1800:
+                player.x = 1800
+                player.jump = 1
             if player.y >= 840:
-
                 player.y = 840
                 player.velocity = 0
                 player.jump = 1
@@ -403,7 +413,9 @@ def main():
                             screen.blit(dirt, (column_count*40, row_count*40))
                         if field.matrix[row_count][column_count] == 3:
                             screen.blit(stone, (column_count*40, row_count*40))
-            inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt)
+                        if field.matrix[row_count][column_count] == 4:
+                            screen.blit(bedrock, (column_count*40, row_count*40))
+            inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock)
             player.draw(img)
         pygame.display.flip()
     pygame.quit()
