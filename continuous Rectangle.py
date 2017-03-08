@@ -143,11 +143,11 @@ class Player():
     def top_collision(self, field):
         if self.x % 40 == 0:
             if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
-                self.y = self.ygrid
+                self.y = (self.ygrid+1)*40
                 self.velocity = self.velocity * -.5
         elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
             self.velocity = self.velocity * -.5
-            self.velocity = self.velocity * -.5
+            self.y = (self.ygrid+1)*40
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
