@@ -457,7 +457,7 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
                     screen.blit(bedrock, (column_count*40, row_count*40))
     inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock, spring)
     player.draw(amon_picture)
-    return [level_select, inventory_block_index, previous_level_select, mouse]
+    return [level_select, inventory_block_index, previous_level_select]
 
 #Control
 def main():
@@ -491,6 +491,7 @@ def main():
         pygame.display.set_caption(level_select)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
+        mouse_y = mouse[1]
         if level_select is "Menu":
             returned = menu(previous_level_select)
             level_select = returned[0]
@@ -500,13 +501,11 @@ def main():
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
-            mouse = level_one[3]
         if level_select is "Level_Two":
             level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring)
             level_select = level_two[0]
             inventory_block_index2 = level_two[1]
             previous_level_select = level_two[2]
-            mouse = level_two[3]
         pygame.display.flip()
     pygame.quit()
 
