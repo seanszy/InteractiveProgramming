@@ -51,7 +51,7 @@ class Field():
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 if row == 3:
-                    self.matrix[row+19][column] = 10
+                    self.matrix[row+19][column] = 9
                 else:
                     self.matrix[row+19][column] = row+1
 
@@ -257,7 +257,7 @@ class Inventory():
         player_x_grid = player_x//40
         player_y_grid = player_y//40
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if block_type != 10:
+        if block_type != 9:
             if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
                 if self.bin_list[block_type-1] < 64:
                     if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
@@ -345,7 +345,7 @@ def level_two_map():
     [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] ,
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0] ,
     [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0] ,
-    [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0] ,
+    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0] ,
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     return matrix
 
@@ -453,7 +453,7 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
                     screen.blit(dirt, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 3:
                     screen.blit(stone, (column_count*40, row_count*40))
-                if field.matrix[row_count][column_count] == 10:
+                if field.matrix[row_count][column_count] == 9:
                     screen.blit(bedrock, (column_count*40, row_count*40))
     inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock, spring)
     player.draw(amon_picture)
