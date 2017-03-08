@@ -72,7 +72,8 @@ class Field():
         self. matrix[18][15] = 4
 
     def matrix_update(self, block_type):
-        """Uses the block objects in the list of blocks to update the matrix used to detect collisions"""
+        """Uses the block objects in the list of blocks to update the matrix
+        used to detect collisions"""
         for block in self.blocks:
             self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
             self.blocks.remove(block)
@@ -88,7 +89,8 @@ class Player():
     appearance, and motion.
         """
 
-    def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0, fall='on', left='off', right='off', jump=0):
+    def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0,
+                 fall='on', left='off', right='off', jump=0):
         """The first 5 atributes are the same as the Rectangle class above.
         velocity - change in y position for each time step.
         acceleration_constant - change in velocity if falling
@@ -107,30 +109,32 @@ class Player():
         self.acceleration_constant = .6
         self.jump = jump
 
-
     def bottom_collision(self, field, next_y):
         """ stops the player's downward movement if his vertical position is
         colliding with a block."""
         """Also makes the player bounce if this block is a trmpoline"""
         self.jump = 0
         block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
+        block_below_right = field.matrix[int(self.ygrid+2)][int(self.xgrid+1)]
         if self.x % 40 == 0:
-            if block_below !=0:
+            if block_below != 0:
                 self.fall = "off"
                 self.velocity = 0
                 self.y = (self.ygrid)*40
                 self.jump = 1
                 if block_below == 4:
                     self.super_jump()
-        elif block_below !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
+        elif block_below != 0 or block_below_right != 0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
-            if block_below == 4 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] == 4:
+            if block_below == 4 or block_below_right == 4:
                 self.super_jump()
 
     def left_collision(self, field):
+        """Prohibits leftward movement if it would bring the player inside a
+        block or outside the screen."""
         if self.x%40 == 0:
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0:
@@ -145,6 +149,8 @@ class Player():
             return True
 
     def right_collision(self, field):
+        """Prohibits leftward movement if it would bring the player inside a
+        block or outside the screen."""
         if self.x%40 == 0:
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
