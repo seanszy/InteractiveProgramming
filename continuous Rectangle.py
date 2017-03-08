@@ -28,6 +28,7 @@ class Rectangle():
     #draws the rectangles that are dropped
     def draw_rectangle(self):
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+
     def draw_with_outline(self):
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], 1)
 
@@ -47,27 +48,32 @@ class Field():
             self.matrix.append(inner)
             for j in range(size[0]//40+1):
                 inner.append(0)
-
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 self.matrix[row+19][column] = row+1
+
+        self. matrix[15][15] = 5
+        self.matrix_print()
+
                 #rectangle_color = color_matrix[1]
                 #block_x = column*block_size
                 #block_y = size[1]-block_size*row - block_size
                 #block = Rectangle(block_x, block_y,
-                #              block_size, block_size, rectangle_color)
+                #block_size, block_size, rectangle_color)
                 #self.blocks.append(block)
 
     def matrix_update(self, block_type):
         for block in self.blocks:
             self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
             self.blocks.remove(block)
+
     def matrix_print(self):
         for rows in self.matrix:
             print(rows)
 
 class Player():
-    def __init__(self, x=40, y=660, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off',jump=0):
+    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off', jump=0):
+
         self.x = x
         self.y = y
         self.width = width
@@ -83,17 +89,23 @@ class Player():
 
     def bottom_collision(self, field, next_y):
         self.jump = 0
+        block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
         if self.x % 40 == 0:
-            if field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0:
+            if block_below !=0:
                 self.fall = "off"
                 self.velocity = 0
                 self.y = (self.ygrid)*40
                 self.jump = 1
-        elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
+                if block_below == 5:
+                    self.jumps()
+        elif block_below !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
+            if block_below == 5 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] == 5:
+                self.jumps()
+
     def left_collision(self, field):
         if self.x%40 == 0:
             if self.y%40 == 0:
@@ -129,7 +141,7 @@ class Player():
                 self.velocity = self.velocity * -.5
         elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
             self.velocity = self.velocity * -.5
-            self.y = (self.ygrid+1)*40
+            self.y = (self.ygrid+ 1)*40
 
     def player_in_grid(self):
         self.xgrid = self.x//block_size
@@ -406,8 +418,10 @@ def main():
                 for column in row:
                     column_count+=1
                     if field.matrix[row_count][column_count] != 0:
-                        #rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
-                        #rectangle.draw_with_outline()
+                        if field.matrix[row_count][column_count] == 5:
+                            # rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
+                            rectangle = Rectangle(column_count*40, row_count*40, 40, 40)
+                            rectangle.draw_rectangle()
                         if field.matrix[row_count][column_count] == 1:
                             screen.blit(grass,(column_count*40, row_count*40))
                         if field.matrix[row_count][column_count] == 2:
