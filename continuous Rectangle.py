@@ -89,23 +89,6 @@ class Player():
 
     def bottom_collision(self, field, next_y):
         self.jump = 0
-        # nexty_index = (self.y + next_y)//40
-        # print(next_y,nexty_index)
-        # if self.y + next_y > self.ygrid*40:
-        #     if self.x%40 == 0:
-        #         if field.matrix[int(nexty_index+2)][int(self.xgrid)] !=0:
-        #             self.fall = "off"
-        #             self.velocity = 0
-        #             self.y = (self.ygrid+1)*40
-        #             jump = 1
-        #         else:
-        #             self.fall = 'on'
-        #     elif field.matrix[int(nexty_index+2)][int(self.xgrid)] != 0 or field.matrix[int(nexty_index)+1][int(self.xgrid+1)] != 0:
-        #         self.fall = "off"
-        #         self.velocity = 0
-        #         jump = 1
-        #         self.y = (self.ygrid+1)*40
-        # return jump
         block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
         if self.x % 40 == 0:
             if block_below !=0:
@@ -278,14 +261,33 @@ class Inventory():
         mouse_y_grid = mouse [1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y //40
-        if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
-            if self.bin_list[block_type-1] > 0:
-                if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
-                        self.bin_list[block_type-1] -= 1
-                        mouse_x_to_grid = (mouse[0]//40)*40
-                        mouse_y_to_grid = (mouse[1]//40)*40
-                        drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
-                        field.blocks.append(drop_block)
+        if player_x%40 == 0:
+            check_top_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
+            check_bottom_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1)
+            if (check_top_player== False) and (check_bottom_player== False):
+                if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+                    if self.bin_list[block_type-1] > 0:
+                        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                                self.bin_list[block_type-1] -= 1
+                                mouse_x_to_grid = (mouse[0]//40)*40
+                                mouse_y_to_grid = (mouse[1]//40)*40
+                                drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                                field.blocks.append(drop_block)
+        else:
+            check_top_left_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
+            check_top_right_player =((mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1))
+            check_bottom_left_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid)
+            check_bottom_right_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid+1)
+            if (check_top_left_player == False) and (check_top_right_player == False):
+                if (check_bottom_left_player== False) and (check_bottom_right_player== False):
+                    if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+                        if self.bin_list[block_type-1] > 0:
+                            if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                                    self.bin_list[block_type-1] -= 1
+                                    mouse_x_to_grid = (mouse[0]//40)*40
+                                    mouse_y_to_grid = (mouse[1]//40)*40
+                                    drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
+                                    field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock):
