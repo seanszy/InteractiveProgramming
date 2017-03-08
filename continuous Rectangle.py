@@ -346,6 +346,7 @@ class Inventory():
         screen.blit(image_list[current_block_index-1],(self.x_pos, self.y_pos + bin*self.bin_height + 80))
 
 def level_two_map():
+    """Stores the map for the second level"""
     matrix = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
@@ -378,32 +379,38 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
                   bedrock, amon_picture, inventory, inventory_block_index,
                   level_select, level, previous_level_select, spring,
                   player_color, done, sean, colvin):
-
+    """This is the main function of the program. It contains the controller for the program
+    user keystrokes and other actions are turned into actions in the game
+    by referencing other funtions and classes."""
     player.fall = 'on'
     field.matrix_update(inventory_block_index)
-    next_y = player.velocity
+    next_y = player.velocity #how far the player will move on the next iteration
+    #finds where in the matrix the player is
     player.player_in_grid()
-    player.left_collision(field)
+    #top/bottom collisions
     player.top_collision(field)
     player.bottom_collision(field, next_y)
     previous_level_select = str(level)
     clock.tick(40)
+
+    #move left/right
     keys = pygame.key.get_pressed()
     player.left = 'off'
     player.right = 'off'
-
+    #move left. Allows for holding the key down. Left collisions
     if keys[pygame.K_a]:
         player_left_move = player.left_collision(field)
         if player_left_move is True:
             player.left = 'on'
         else:
             player.left = 'off'
+    #move right. Allows for holding the key down. Right collisions
     if keys[pygame.K_d]:
         player_right_move = player.right_collision(field)
         if player_right_move is True:
             player.right = 'on'
 
-    #left
+    #stops plyaer from moving out of screen to left, right, or bottom
     if player.x <= 0:
         player.x = 0
     if player.x >= 1800:
@@ -413,34 +420,38 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
         player.velocity = 0
         player.jump = 1
         player.fall = 'off'
+
+    #pick up block
     if mouse2[0] == 1:
         inventory.add_to_inventory(mouse, field, player.x, player.y)
+    #place block
     if mouse2[2] == 1:
         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
-    for event in pygame.event.get():  # User did something
-
-        if event.type == pygame.QUIT:  # If user hit q or closed
-            print("HELLO")
+    #possible actions start here
+    for event in pygame.event.get():
+        #press teh x in the top left to quit
+        if event.type == pygame.QUIT:
             done = True
 
+        #Here begins all the possible actions dependent on keystrokes
         if event.type == pygame.KEYDOWN:
+            #jump function
             if event.key == pygame.K_w:
                 if player.jump == 1:
                     player.jumps()
                 player.jump = 0
+            #pause
             if event.key == pygame.K_p:
                 level_select = "Menu"
+            #chance player character
             if event.key == pygame.K_c:
-                print(player_color, "C")
                 player_color += 1
-                print(player_color, "A")
                 if player_color == 3:
                     player_color = 0
                 player.color = player_color
 
-            if event.key == pygame.K_o:
-                field.matrix_print()
             # inventory
+            #cycles which block to place by pressing 1,2,3, and 4
             if event.key == pygame.K_1:
                 inventory_block_index = 1
             if event.key == pygame.K_2:
@@ -450,22 +461,24 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
             if event.key == pygame.K_4:
                 inventory_block_index = 4
 
+            #Switches between levels
             if event.key == pygame.K_8:
                 level_select = "Level_One"
             if event.key == pygame.K_9:
                 level_select = "Level_Two"
 
+            #quit game
             if event.key == pygame.K_q:
                 pygame.quit()
                 return
 
     # View-------------------------------------------------------------
+    #prints the background
     screen.fill(WHITE)
 
-    # draw color matric and main rectangle
-    # for block in field.blocks:
-    #    block.draw_with_outline()
-
+    #This prints all of the blocks on the screen
+    #row and column counts are used to keep track of matrix row and column
+    #there is a for loop to run through each row and column
     row_count = -1
     for row in field.matrix:
         column_count = -1
@@ -474,6 +487,7 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
             column_count+=1
             if field.matrix[row_count][column_count] != 0:
                 if field.matrix[row_count][column_count] == 4:
+                    #based on the number entry in the matrix, it prints a different block
                     screen.blit(spring, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 1:
                     screen.blit(grass, (column_count*40, row_count*40))
@@ -489,11 +503,13 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
 
 #Control
 def main():
-    #color_matrix = [BLACK, BLUE, GREEN, RED]
+    #how long between each cycle of the while loop
     clock = pygame.time.Clock()
-    previous_level_select = "unknown"
+
+    #initializes player, field, and other variables for level one and two
     player_color = 0
-    player_color2 = 1
+    player_color2 = 0
+    previous_level_select = "unknown"
     level_select = "Menu"
     done = False
     player = Player()
@@ -506,6 +522,8 @@ def main():
     inventory2 = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 1
     inventory_block_index2 = 1
+
+    #loads all the pictures
     amon_picture = pygame.image.load('amon.png')
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
@@ -519,28 +537,34 @@ def main():
     colvin = pygame.image.load("colvin.png")
 ### CONTROL
     while not done:
+        #sets the caption to the name of the level
         pygame.display.set_caption(level_select)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
         mouse_y = mouse[1]
+        #setting up the menu
         if level_select is "Menu":
             returned = menu(previous_level_select)
             level_select = returned[0]
             done = returned[1]
+        #setting up level one
         if level_select is "Level_One":
             level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring, player_color, done, sean, colvin)
+            #the variables in the main function can't be accessed from the main_movement function. They are
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
             player_color = level_one[3]
             done = level_one[4]
+        #setting up level two
         if level_select is "Level_Two":
             level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring, player_color2, done, sean, colvin)
             level_select = level_two[0]
             inventory_block_index2 = level_two[1]
             previous_level_select = level_two[2]
-            player_color = level_two[3]
+            player_color2 = level_two[3]
             done = level_two[4]
+        #prints the game on each iteration of the loop
         pygame.display.flip()
     pygame.quit()
 
