@@ -50,9 +50,12 @@ class Field():
                 inner.append(0)
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
-                self.matrix[row+19][column] = row+1
+                if row == 3:
+                    self.matrix[row+19][column] = 10
+                else:
+                    self.matrix[row+19][column] = row+1
 
-        self. matrix[15][15] = 5
+        self. matrix[15][6] = 4
         self.matrix_print()
 
                 #rectangle_color = color_matrix[1]
@@ -97,15 +100,15 @@ class Player():
                 self.velocity = 0
                 self.y = (self.ygrid)*40
                 self.jump = 1
-                if block_below == 5:
-                    self.jumps()
+                if block_below == 4:
+                    self.super_jump()
         elif block_below !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
-            if block_below == 5 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] == 5:
-                self.jumps()
+            if block_below == 4 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] == 4:
+                self.super_jump()
 
     def left_collision(self, field):
         if self.x%40 == 0:
@@ -167,9 +170,12 @@ class Player():
         self.y = self.y
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
-
     def jumps(self):
         self.velocity = -9
+        self.fall = 'on'
+
+    def super_jump(self):
+        self.velocity = -13
         self.fall = 'on'
 
 
@@ -180,6 +186,7 @@ class Text():
         self.y_pos = y_pos
         self.size = size
         self.color = color
+
     def print_text(self):
         font = pygame.font.SysFont("monospace", self.size)
         label = font.render(self.text, 40, self.color)
@@ -228,8 +235,8 @@ def menu(previous_level_select):
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0]
-        bin_list_item = [BLACK, RED, BLACK, GREEN]
+        bin_list = [0, 0, 0, 0]
+        bin_list_item = [BLACK, RED, BLACK, GREEN, BLUE]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -246,17 +253,15 @@ class Inventory():
 
     def add_to_inventory(self, mouse, field, player_x, player_y):
         mouse_x_grid = mouse[0] // 40
-        mouse_y_grid = mouse [1] // 40
+        mouse_y_grid = mouse[1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if block_type != 4:
-            if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
+        if block_type != 10:
+            if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
                 if self.bin_list[block_type-1] < 64:
                     if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                         self.bin_list[block_type-1] += 1
-                        x_bin = (mouse[0]//40)*40
-                        y_bin = (mouse[1]//40)*40
                         field.matrix[mouse[1]//40][mouse[0]//40] = 0
                         self.update_bin_width(block_type)
 
@@ -271,7 +276,7 @@ class Inventory():
             if (check_top_player== False) and (check_bottom_player== False):
                 if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
                     if self.bin_list[block_type-1] > 0:
-                        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                        if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
                                 self.bin_list[block_type-1] -= 1
                                 mouse_x_to_grid = (mouse[0]//40)*40
                                 mouse_y_to_grid = (mouse[1]//40)*40
@@ -294,10 +299,10 @@ class Inventory():
                                     field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
-    def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock):
+    def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock, spring):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
-        image_list = [grass, dirt, stone]
+        image_list = [grass, dirt, stone, spring]
         for bin in range(len(self.bin_list)):
             #rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
             #rectangle.draw_rectangle()
@@ -308,7 +313,7 @@ class Inventory():
             if bin+1 == 3:
                 screen.blit(stone,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 4:
-                screen.blit(bedrock,(self.x_pos, self.y_pos + bin*self.bin_height))
+                screen.blit(spring,(self.x_pos, self.y_pos + bin*self.bin_height))
             text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
             text.print_text()
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
@@ -340,12 +345,12 @@ def level_two_map():
     [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] ,
     [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0] ,
     [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0] ,
-    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0] ,
+    [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0] ,
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     return matrix
 
 
-def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select):
+def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select, spring):
     level_variable = "open"
     player.fall = 'on'
     field.matrix_update(inventory_block_index)
@@ -414,6 +419,8 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
                 inventory_block_index = 2
             if event.key == pygame.K_3:
                 inventory_block_index = 3
+            if event.key == pygame.K_4:
+                inventory_block_index = 4
 
             if event.key == pygame.K_8:
                 level_select = "Level_One"
@@ -438,19 +445,17 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
         for column in row:
             column_count+=1
             if field.matrix[row_count][column_count] != 0:
-                if field.matrix[row_count][column_count] == 5:
-                    # rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
-                    rectangle = Rectangle(column_count*40, row_count*40, 40, 40)
-                    rectangle.draw_rectangle()
+                if field.matrix[row_count][column_count] == 4:
+                    screen.blit(spring, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 1:
-                    screen.blit(grass,(column_count*40, row_count*40))
+                    screen.blit(grass, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 2:
                     screen.blit(dirt, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 3:
                     screen.blit(stone, (column_count*40, row_count*40))
-                if field.matrix[row_count][column_count] == 4:
+                if field.matrix[row_count][column_count] == 10:
                     screen.blit(bedrock, (column_count*40, row_count*40))
-    inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock)
+    inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock, spring)
     player.draw(amon_picture)
     return [level_select, inventory_block_index, previous_level_select, mouse]
 
@@ -480,6 +485,7 @@ def main():
     netherack = pygame.image.load("netherack.png")
     netherquartz = pygame.image.load("netherquartz.png")
     bedrock = pygame.image.load("bedrock.png")
+    spring = pygame.image.load("spring.png")
 ### CONTROL
     while not done:
         pygame.display.set_caption(level_select)
@@ -490,13 +496,13 @@ def main():
             level_select = returned[0]
             done = returned[1]
         if level_select is "Level_One":
-            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select)
+            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring)
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
             mouse = level_one[3]
         if level_select is "Level_Two":
-            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select)
+            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring)
             level_select = level_two[0]
             inventory_block_index2 = level_two[1]
             previous_level_select = level_two[2]
