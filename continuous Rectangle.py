@@ -1,6 +1,8 @@
 import pygame
 
-#initialize values used throughout the entire game
+""" The following section of the script initializes a few global varables that
+are helpful to reference at any point in the program."""
+
 pygame.init() #initialize pygame
 size = [1840, 920] #size of screen
 screen = pygame.display.set_mode(size)
@@ -11,12 +13,12 @@ GREEN = (  20, 255,   20)
 RED =   (255,   0,   0)
 color_matrix = [BLACK, BLUE, GREEN, RED]
 block_size = 40 #width/length of blocks in pixels
-text_x = 20
-text_y = 200
 jump = 0
 
 
-### Model
+"""    Model ------------------------------------------------------------  """
+
+
 class Rectangle():
     """Used when initializing block objects. These block objects are later put into the field matrix.
     has atributes for:
@@ -58,29 +60,31 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
+        #makes a matrix that is the shape of the field
+        #adds an extra row to width and height to prevent out of bounds errors
         for i in range(size[1]//40+1):
             inner = []
             self.matrix.append(inner)
             for j in range(size[0]//40+1):
                 inner.append(0)
+        #adds blocks to the first 4 rows of the field
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 if row == 3:
                     self.matrix[row+19][column] = 9
                 else:
                     self.matrix[row+19][column] = row+1
-                    # setting up the trmpoline
-        self. matrix[18][15] = 4
+        self.matrix[18][15] = 4 #add trampoline
 
     def matrix_update(self, block_type):
-        """Uses the block objects in the list of blocks to update the matrix
-        used to detect collisions"""
+        """Uses the block objects in the list of blocks to update the field matrix
+        used to detect collisions. The block is then removed from the list"""
         for block in self.blocks:
             self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
             self.blocks.remove(block)
 
     def matrix_print(self):
-        """Prints the matrix in a format that is easy to read"""
+        """Prints the field matrix in a format that is easy to read"""
         print("Matrix")
         for rows in self.matrix:
             print(rows, ",")
@@ -92,7 +96,7 @@ class Player():
 
     def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0,
                  fall='on', left='off', right='off', jump=0):
-        """The first 5 atributes are the same as the Rectangle class above.
+        """The first 5 attributes are the same as the Rectangle class above.
         velocity - change in y position for each time step.
         acceleration_constant - change in velocity if falling
         fall - whether the player should be falling
@@ -112,11 +116,12 @@ class Player():
 
     def bottom_collision(self, field, next_y):
         """ stops the player's downward movement if his vertical position is
-        colliding with a block."""
-        """Also makes the player bounce if this block is a trmpoline"""
+        colliding with a block and allows him to jump again."""
+        """Also makes the player bounce if this block is a trampoline"""
         self.jump = 0
         block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
         block_below_right = field.matrix[int(self.ygrid+2)][int(self.xgrid+1)]
+        #below is for if the player is directly over a block
         if self.x % 40 == 0:
             if block_below != 0:
                 self.fall = "off"
@@ -124,24 +129,28 @@ class Player():
                 self.y = (self.ygrid)*40
                 self.jump = 1
                 if block_below == 4:
-                    self.super_jump()
+                    self.super_jump() #trampoline jump
+        #below is for if the player is between two blocks
         elif block_below != 0 or block_below_right != 0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
             if block_below == 4 or block_below_right == 4:
-                self.super_jump()
+                self.super_jump() #trampoline jump
 
     def left_collision(self, field):
         """Prohibits leftward movement if it would bring the player inside a
         block or outside the screen."""
+        #collisions occur when the block is directly over a block
         if self.x%40 == 0:
+            #if the player is not jumping only two blocks are checked
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0:
                     return False
                 else:
                     return True
+            #if the player is jumping more blocks must be checked for collisions
             elif field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid-1)] != 0:
                 return False
             else:
@@ -150,8 +159,8 @@ class Player():
             return True
 
     def right_collision(self, field):
-        """Prohibits leftward movement if it would bring the player inside a
-        block or outside the screen."""
+        """Prohibits rightward movement if it would bring the player inside a
+        block or outside the screen. Essentally the same as left_collision"""
         if self.x%40 == 0:
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
@@ -166,31 +175,41 @@ class Player():
             return True
 
     def top_collision(self, field):
-        if self.x % 40 == 0:
+        """ prohibits movement if the player is going upwards through a block.
+        Incorprorates a 50% bounce back velocity"""
+        if self.x % 40 == 0: #if directly over block
             if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
                 self.y = (self.ygrid+1)*40
                 self.velocity = self.velocity * -.5
+        #if between two blocks check more spots for collisions
         elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
             self.velocity = self.velocity * -.5
-            self.y = (self.ygrid+ 1)*40
+            self.y = (self.ygrid+1)*40
 
     def player_in_grid(self):
+        """Finds the field matrix value that the player's position corresponds to
+        and stores this in the new atributes self.xgrid and self.ygrid"""
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
 
     def draw(self, amon_picture, sean, colvin):
+        """ The actual printing of the player on the screen
+        This is where we excecute our movement if the player is supposed
+        to be moving or falling."""
         if self.fall == 'on':
+            #the player has a velocity to allow vertical position to change
+            #fluidly
             self.velocity += self.acceleration_constant
-
         if self.left == 'on':
             self.x += -4
 
         if self.right == 'on':
             self.x += 4
 
+        # update the y position
         self.y = self.y + self.velocity
-        #pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
-        print(self.color)
+
+         # change-able skins integrated here
         if self.color == 0:
             screen.blit(amon_picture,(self.x,self.y))
         if self.color == 1:
@@ -199,15 +218,21 @@ class Player():
             screen.blit(colvin,(self.x,self.y))
 
     def jumps(self):
-        self.velocity = -9
+        """regular jump function
+        triggered by the 'w' key """
+        jump_strength = -9
+        self.velocity = jump_strength
         self.fall = 'on'
 
     def super_jump(self):
-        self.velocity = -13
+        """Extra high jump triggered by a bottom collision with a trampoline"""
+        jump_strength = -13
+        self.velocity = jump_strength
         self.fall = 'on'
 
 
 class Text():
+    """Used when forming all of our text boxes - especially in the menu"""
     def __init__(self, text, x_pos, y_pos, size, color):
         self.text = text
         self.x_pos = x_pos
@@ -216,9 +241,11 @@ class Text():
         self.color = color
 
     def print_text(self):
+        """ A pygame print function integrated into the Text class"""
         font = pygame.font.SysFont("monospace", self.size)
         label = font.render(self.text, 40, self.color)
         screen.blit(label, (self.x_pos, self.y_pos))
+
 
 def menu(previous_level_select):
     """This is the menu screen that is shown when you first start playing the
@@ -226,19 +253,19 @@ def menu(previous_level_select):
     playing the game by pressing 8, 9, or P"""
     level_select = "Menu"
     done = False
-    #Looks for player input
+    # Looks for player input
     for event in pygame.event.get():
-        if event.type == pygame.QUIT: #quits
+        if event.type == pygame.QUIT:  # quits
             done = True
-        #looks for a keystroke
+        # looks for a keystroke
         if event.type == pygame.KEYDOWN:
-            #quits when q is pressed
+            # quits when q is pressed
             if event.key == pygame.K_q:  # If user hit q or closed")
                 done = True
-            #whhich level to go to is selected here.
-            #p is used to go to the previous level.
-            #on the first iteration, this is "unknown:, so p takes you to level one
-            #8 or 9 also take you to level one or two
+            # which level to go to is selected here.
+            # p is used to go to the previous level.
+            # on the first iteration, this is "unknown:, so p takes you to level one
+            # 8 or 9 also take you to level one or two
             if previous_level_select is "unknown":
                 if event.key == pygame.K_8:
                     level_select = "Level_One"
@@ -247,13 +274,13 @@ def menu(previous_level_select):
                 if event.key == pygame.K_p:
                     level_select = "Level_One"
             else:
-                #After you have entered a level this takes you back to the previous
-                #level when you press P
+                # After you have entered a level this takes you back to the previous
+                # level when you press P
                 print("going previous", previous_level_select)
                 if event.key == pygame.K_p:
                     level_select = previous_level_select
 
-    #Fill the screen white and print a bunch of text.
+    # Fill the screen white and print a bunch of text.
     screen.fill(WHITE)
     text_list = []
     text1 = Text("Bounce Bounce Play Time", 150, 50, 100, RED)
@@ -281,7 +308,7 @@ class Inventory():
     those blocks that you have are shown in the inventory. Additionally, the block
     that you are currently placing is shown here."""
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0, 0] #initializes you with 0 blocks of any kind
+        bin_list = [0, 0, 0, 0]  # initializes you with 0 blocks of any kind
         bin_list_item = [BLACK, RED, BLACK, GREEN, BLUE]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -291,78 +318,73 @@ class Inventory():
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
 
-    #def update_bin_width(self, block_type):
-        #if self.bin_list[block_type-1] > 9:
-            #self.bin_width = 1.5*block_size
-        #else:
-            #self.bin_width = block_size
 
     def add_to_inventory(self, mouse, field, player_x, player_y):
         """This method picks up a block from the world when you left click. It
         then increments the count of that block in your inventory by one"""
-        #finds where the mouse and player are in the field grid
+        # finds where the mouse and player are in the field grid
         mouse_x_grid = mouse[0] // 40
         mouse_y_grid = mouse[1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
-        #finds what block type you picked up
+        # finds what block type you picked up
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if block_type != 9: #9 is beckrock, which cannot be mined
-            #implement a range in which you can pick up from
+        if block_type != 9:  # 9 is beckrock, which cannot be mined
+            # implement a range in which you can pick up from
             if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
-                #you can only hold a maximum of 64 of a certain item
+                # you can only hold a maximum of 64 of a certain item
                 if self.bin_list[block_type-1] < 64:
-                    #only adds if there is a block in that space
+                    # only adds if there is a block in that space
                     if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                         self.bin_list[block_type-1] += 1
-                        #sets that space on the field to empty
+                        # sets that space on the field to empty
                         field.matrix[mouse[1]//40][mouse[0]//40] = 0
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
         """This function is used to place items in the word. The current block in the inventory
         then removed from the inventory and placed in the world in the position of the mouse"""
-        #finds where the mouse is located in the field grid
+        # finds where the mouse is located in the field grid
         mouse_x_grid = mouse[0] // 40
-        mouse_y_grid = mouse [1] // 40
-        #finds where the player is located in the field grid
+        mouse_y_grid = mouse[1] // 40
+        # finds where the player is located in the field grid
         player_x_grid = player_x//40
-        player_y_grid = player_y //40
-        #To prevent the player from dropping a block where he or she is standing
-        #many if loops were used.
-        #the first is based on if the player is directly over a block
-        if player_x%40 == 0:
-            #in this case the block cannot be placed in either the top or bottom
-            #block of the player
+        player_y_grid = player_y//40
+        # To prevent the player from dropping a block where he or she is standing
+        # many if loops were used.
+        # the first is based on if the player is directly over a block
+        if player_x % 40 == 0:
+            # in this case the block cannot be placed in either the top or bottom
+            # block of the player
             check_top_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
             check_bottom_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1)
             if (check_top_player== False) and (check_bottom_player== False):
-                if field.matrix[mouse[1]//40][mouse[0]//40] == 0: #A block cannot be placed if another block already is in that spot
+                if field.matrix[mouse[1]//40][mouse[0]//40] == 0: # A block cannot be placed if another block already is in that spot
                     if self.bin_list[block_type-1] > 0: #you must have at least one in your inventory to place
-                        #The range in which you can place a block is a circle with radius 5
+                        # T he range in which you can place a block is a circle with radius 5
                         if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
-                                self.bin_list[block_type-1] -= 1 #subtract one from inventory
-                                #place the block where your mouse is
+                                self.bin_list[block_type-1] -= 1 # subtract one from inventory
+                                # place the block where your mouse is
                                 mouse_x_to_grid = (mouse[0]//40)*40
                                 mouse_y_to_grid = (mouse[1]//40)*40
                                 drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
                                 field.blocks.append(drop_block)
         else:
-            #In this case the player is halway over a block, which means
-            #that the player spans 4 blocks, and you should not be able to
-            #place a block in any of these places
+            # In this case the player is halway over a block, which means
+            # that the player spans 4 blocks, and you should not be able to
+            # place a block in any of these places
             check_top_left_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
             check_top_right_player =((mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1))
             check_bottom_left_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid)
             check_bottom_right_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid+1)
             if (check_top_left_player == False) and (check_top_right_player == False):
                 if (check_bottom_left_player== False) and (check_bottom_right_player== False):
-                    #make sure a block isn't already in that position
+                    # make sure a block isn't already in that position
                     if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
-                        #make sure you have at least one item in your inventor
+                        # make sure you have at least one item in your inventor
                         if self.bin_list[block_type-1] > 0:
                             if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
                                     self.bin_list[block_type-1] -= 1 #subtract one from inventory
-                                    #place the block where your mouse is
+                                    # place the block where your mouse is
                                     mouse_x_to_grid = (mouse[0]//40)*40
                                     mouse_y_to_grid = (mouse[1]//40)*40
                                     drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
@@ -372,11 +394,11 @@ class Inventory():
         """Draws the inventory in the top left. Also prints the number of blocks in each slot of the inventory"""
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
-        #A list of all the images to print in the top left
+        # A list of all the images to print in the top left
         image_list = [grass, dirt, stone, spring]
-        #For loop to print the inventory for every item in the inventoryy
+        # For loop to print the inventory for every item in the inventoryy
         for bin in range(len(self.bin_list)):
-            #checks what type of block and prints that type
+            # checks what type of block and prints that type
             if bin+1 == 1:
                 screen.blit(grass,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 2:
@@ -385,10 +407,10 @@ class Inventory():
                 screen.blit(stone,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 4:
                 screen.blit(spring,(self.x_pos, self.y_pos + bin*self.bin_height))
-            #prints the number of items in the inventory in that slot
-            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 30, WHITE)
+            # prints the number of items in the inventory in that slot
+            text = Text(str(self.bin_list[bin]), self.x_pos+45, self.y_pos + bin*self.bin_height, 30, BLACK)
             text.print_text()
-        #prints the current block and the text for it.
+        # prints the current block and the text for it.
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
         text2.print_text()
         screen.blit(image_list[current_block_index-1],(self.x_pos, self.y_pos + bin*self.bin_height + 80))
@@ -396,30 +418,30 @@ class Inventory():
 def level_two_map():
     """Stores the map for the second level"""
     matrix = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 4, 0, 9, 9, 9, 9, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 3, 0, 3, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 0, 1, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [0, 0, 1, 1, 9, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 9, 1, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
-    [1, 1, 2, 1, 9, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 9, 2, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] ,
-    [2, 2, 2, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0] ,
-    [2, 2, 2, 2, 9, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 9, 3, 3, 3, 3, 2, 2, 2, 2, 2, 0] ,
-    [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0] ,
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 4, 0, 9, 9, 9, 9, 0, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 3, 0, 3, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 3, 0, 0, 0, 0, 0, 3, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 3, 3, 3, 3, 3, 3, 3, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 1, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 9, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 9, 1, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 2, 1, 9, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 9, 2, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+        [2, 2, 2, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 9, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0],
+        [2, 2, 2, 2, 9, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 9, 3, 3, 3, 3, 2, 2, 2, 2, 2, 0],
+        [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     return matrix
 
 
@@ -433,32 +455,32 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
     player.fall = 'on'
     field.matrix_update(inventory_block_index)
     next_y = player.velocity #how far the player will move on the next iteration
-    #finds where in the matrix the player is
+    # finds where in the matrix the player is
     player.player_in_grid()
-    #top/bottom collisions
+    # top/bottom collisions
     player.top_collision(field)
     player.bottom_collision(field, next_y)
     previous_level_select = str(level)
     clock.tick(40)
 
-    #move left/right
+    # move left/right
     keys = pygame.key.get_pressed()
     player.left = 'off'
     player.right = 'off'
-    #move left. Allows for holding the key down. Left collisions
+    # move left. Allows for holding the key down. Left collisions
     if keys[pygame.K_a]:
         player_left_move = player.left_collision(field)
         if player_left_move is True:
             player.left = 'on'
         else:
             player.left = 'off'
-    #move right. Allows for holding the key down. Right collisions
+    # move right. Allows for holding the key down. Right collisions
     if keys[pygame.K_d]:
         player_right_move = player.right_collision(field)
         if player_right_move is True:
             player.right = 'on'
 
-    #stops plyaer from moving out of screen to left, right, or bottom
+    # stops plyaer from moving out of screen to left, right, or bottom
     if player.x <= 0:
         player.x = 0
     if player.x >= 1800:
@@ -469,29 +491,29 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
         player.jump = 1
         player.fall = 'off'
 
-    #pick up block
+    # pick up block
     if mouse2[0] == 1:
         inventory.add_to_inventory(mouse, field, player.x, player.y)
-    #place block
+    # place block
     if mouse2[2] == 1:
         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
-    #possible actions start here
+    # possible actions start here
     for event in pygame.event.get():
-        #press teh x in the top left to quit
+        # press teh x in the top left to quit
         if event.type == pygame.QUIT:
             done = True
 
-        #Here begins all the possible actions dependent on keystrokes
+        # Here begins all the possible actions dependent on keystrokes
         if event.type == pygame.KEYDOWN:
-            #jump function
+            # jump function
             if event.key == pygame.K_w:
                 if player.jump == 1:
                     player.jumps()
                 player.jump = 0
-            #pause
+            # pause
             if event.key == pygame.K_p:
                 level_select = "Menu"
-            #chance player character
+            # chance player character
             if event.key == pygame.K_c:
                 player_color += 1
                 if player_color == 3:
@@ -499,7 +521,7 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
                 player.color = player_color
 
             # inventory
-            #cycles which block to place by pressing 1,2,3, and 4
+            # cycles which block to place by pressing 1,2,3, and 4
             if event.key == pygame.K_1:
                 inventory_block_index = 1
             if event.key == pygame.K_2:
@@ -509,24 +531,24 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
             if event.key == pygame.K_4:
                 inventory_block_index = 4
 
-            #Switches between levels
+            # Switches between levels
             if event.key == pygame.K_8:
                 level_select = "Level_One"
             if event.key == pygame.K_9:
                 level_select = "Level_Two"
 
-            #quit game
+            # quit game
             if event.key == pygame.K_q:
                 pygame.quit()
                 return
 
     # View-------------------------------------------------------------
-    #prints the background
+    # prints the background
     screen.fill(WHITE)
 
-    #This prints all of the blocks on the screen
-    #row and column counts are used to keep track of matrix row and column
-    #there is a for loop to run through each row and column
+    # This prints all of the blocks on the screen
+    # row and column counts are used to keep track of matrix row and column
+    # there is a for loop to run through each row and column
     row_count = -1
     for row in field.matrix:
         column_count = -1
@@ -551,10 +573,13 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
 
 #Control
 def main():
-    #how long between each cycle of the while loop
+    """ The actual call of the start of the program.
+    Main movement is referenced by this function.
+    """
+    # how long between each cycle of the while loop
     clock = pygame.time.Clock()
 
-    #initializes player, field, and other variables for level one and two
+    # initializes player, field, and other variables for level one and two
     player_color = 0
     player_color2 = 0
     previous_level_select = "unknown"
@@ -571,7 +596,7 @@ def main():
     inventory_block_index = 1
     inventory_block_index2 = 1
 
-    #loads all the pictures
+    # loads all the pictures
     amon_picture = pygame.image.load('amon.png')
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
@@ -583,28 +608,28 @@ def main():
     spring = pygame.image.load("spring.png")
     sean = pygame.image.load("sean.png")
     colvin = pygame.image.load("colvin.png")
-### CONTROL
+
+    """CONTROL"""
     while not done:
-        #sets the caption to the name of the level
+        # sets the caption to the name of the level
         pygame.display.set_caption(level_select)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
-        mouse_y = mouse[1]
-        #setting up the menu
+        # setting up the menu
         if level_select is "Menu":
             returned = menu(previous_level_select)
             level_select = returned[0]
             done = returned[1]
-        #setting up level one
+        # setting up level one
         if level_select is "Level_One":
             level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring, player_color, done, sean, colvin)
-            #the variables in the main function can't be accessed from the main_movement function. They are
+            # the variables in the main function can't be accessed from the main_movement function. They are
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
             player_color = level_one[3]
             done = level_one[4]
-        #setting up level two
+        # setting up level two
         if level_select is "Level_Two":
             level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring, player_color2, done, sean, colvin)
             level_select = level_two[0]
@@ -612,7 +637,7 @@ def main():
             previous_level_select = level_two[2]
             player_color2 = level_two[3]
             done = level_two[4]
-        #prints the game on each iteration of the loop
+        # prints the game on each iteration of the loop
         pygame.display.flip()
     pygame.quit()
 
