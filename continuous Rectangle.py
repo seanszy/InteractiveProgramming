@@ -220,14 +220,24 @@ class Text():
         screen.blit(label, (self.x_pos, self.y_pos))
 
 def menu(previous_level_select):
+    """This is the menu screen that is shown when you first start playing the
+    game. It gives brief instructions on what the game is. You can start
+    playing the game by pressing 8, 9, or P"""
     level_select = "Menu"
     done = False
+    #Looks for player input
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT: #quits
             done = True
+        #looks for a keystroke
         if event.type == pygame.KEYDOWN:
+            #quits when q is pressed
             if event.key == pygame.K_q:  # If user hit q or closed")
                 done = True
+            #whhich level to go to is selected here.
+            #p is used to go to the previous level.
+            #on the first iteration, this is "unknown:, so p takes you to level one
+            #8 or 9 also take you to level one or two
             if previous_level_select is "unknown":
                 if event.key == pygame.K_8:
                     level_select = "Level_One"
@@ -236,11 +246,13 @@ def menu(previous_level_select):
                 if event.key == pygame.K_p:
                     level_select = "Level_One"
             else:
+                #After you have entered a level this takes you back to the previous
+                #level when you press P
                 print("going previous", previous_level_select)
                 if event.key == pygame.K_p:
                     level_select = previous_level_select
-            #if event.key == pygame.K_r:
-            #    player = Player()
+
+    #Fill the screen white and print a bunch of text.
     screen.fill(WHITE)
     text_list = []
     text1 = Text("Bounce Bounce Play Time", 150, 50, 100, RED)
@@ -248,7 +260,7 @@ def menu(previous_level_select):
     text3 = Text("-This is a rudimentary version of Minecraft. Use w, a, s, d to move.", 100, 300, 30, BLACK)
     text4 = Text("-You can move around the world and change the blocks within it.", 100, 350, 30, BLACK)
     text5 = Text("-Your inventory is in the upper left. Cycle through which item to drop with 1, 2, 3, and 4", 100, 400, 30, BLACK)
-    text6 = Text("-Use left click to pick up items and right click to drop them", 100, 450, 30, BLACK)
+    text6 = Text("-Use left click to pick up items and right click to drop them. You have a limited range.", 100, 450, 30, BLACK)
     text7 = Text("-Which block you will drop is shown by the \"Current Block\" space in your inventory", 100, 500, 30, BLACK)
     text8 = Text("-There are multiple worlds to choose from. Press 8 or 9 to enter a different world.",  100, 550, 30, BLACK)
     text9 = Text("-Pause with P, and return to your previous world by pressing P again.", 100, 600, 30, BLACK)
@@ -263,8 +275,12 @@ def menu(previous_level_select):
     return [level_select, done]
 
 class Inventory():
-    def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0, 0]
+    """The inventory is used to pick up, place, and store blocks. The inventory
+    is shown in the upper left. The blocks you can place, and the number of
+    those blocks that you have are shown in the inventory. Additionally, the block
+    that you are currently placing is shown here."""
+    def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):
+        bin_list = [0, 0, 0, 0] #initializes you with 0 blocks of any kind
         bin_list_item = [BLACK, RED, BLACK, GREEN, BLUE]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -274,67 +290,92 @@ class Inventory():
         self.bin_list = bin_list
         self.bin_list_item = bin_list_item
 
-    def update_bin_width(self, block_type):
-        if self.bin_list[block_type-1] > 9:
-            self.bin_width = 1.5*block_size
-        else:
-            self.bin_width = block_size
+    #def update_bin_width(self, block_type):
+        #if self.bin_list[block_type-1] > 9:
+            #self.bin_width = 1.5*block_size
+        #else:
+            #self.bin_width = block_size
 
     def add_to_inventory(self, mouse, field, player_x, player_y):
+        """This method picks up a block from the world when you left click. It
+        then increments the count of that block in your inventory by one"""
+        #finds where the mouse and player are in the field grid
         mouse_x_grid = mouse[0] // 40
         mouse_y_grid = mouse[1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
+        #finds what block type you picked up
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
-        if block_type != 9:
+        if block_type != 9: #9 is beckrock, which cannot be mined
+            #implement a range in which you can pick up from
             if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
+                #you can only hold a maximum of 64 of a certain item
                 if self.bin_list[block_type-1] < 64:
+                    #only adds if there is a block in that space
                     if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                         self.bin_list[block_type-1] += 1
+                        #sets that space on the field to empty
                         field.matrix[mouse[1]//40][mouse[0]//40] = 0
-                        self.update_bin_width(block_type)
 
     def remove_from_inventory(self, field, block_type, player_x, player_y, current_block_index, mouse):
+        """This function is used to place items in the word. The current block in the inventory
+        then removed from the inventory and placed in the world in the position of the mouse"""
+        #finds where the mouse is located in the field grid
         mouse_x_grid = mouse[0] // 40
         mouse_y_grid = mouse [1] // 40
+        #finds where the player is located in the field grid
         player_x_grid = player_x//40
         player_y_grid = player_y //40
+        #To prevent the player from dropping a block where he or she is standing
+        #many if loops were used.
+        #the first is based on if the player is directly over a block
         if player_x%40 == 0:
+            #in this case the block cannot be placed in either the top or bottom
+            #block of the player
             check_top_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
             check_bottom_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1)
             if (check_top_player== False) and (check_bottom_player== False):
-                if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
-                    if self.bin_list[block_type-1] > 0:
+                if field.matrix[mouse[1]//40][mouse[0]//40] == 0: #A block cannot be placed if another block already is in that spot
+                    if self.bin_list[block_type-1] > 0: #you must have at least one in your inventory to place
+                        #The range in which you can place a block is a circle with radius 5
                         if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
-                                self.bin_list[block_type-1] -= 1
+                                self.bin_list[block_type-1] -= 1 #subtract one from inventory
+                                #place the block where your mouse is
                                 mouse_x_to_grid = (mouse[0]//40)*40
                                 mouse_y_to_grid = (mouse[1]//40)*40
                                 drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
                                 field.blocks.append(drop_block)
         else:
+            #In this case the player is halway over a block, which means
+            #that the player spans 4 blocks, and you should not be able to
+            #place a block in any of these places
             check_top_left_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
             check_top_right_player =((mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1))
             check_bottom_left_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid)
             check_bottom_right_player = (mouse_x_grid == player_x_grid+1 and mouse_y_grid == player_y_grid+1)
             if (check_top_left_player == False) and (check_top_right_player == False):
                 if (check_bottom_left_player== False) and (check_bottom_right_player== False):
+                    #make sure a block isn't already in that position
                     if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
+                        #make sure you have at least one item in your inventor
                         if self.bin_list[block_type-1] > 0:
                             if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
-                                    self.bin_list[block_type-1] -= 1
+                                    self.bin_list[block_type-1] -= 1 #subtract one from inventory
+                                    #place the block where your mouse is
                                     mouse_x_to_grid = (mouse[0]//40)*40
                                     mouse_y_to_grid = (mouse[1]//40)*40
                                     drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
                                     field.blocks.append(drop_block)
-        self.update_bin_width(block_type)
 
     def draw_inventory(self, field,  current_block_index, grass, stone, dirt, bedrock, spring):
+        """Draws the inventory in the top left. Also prints the number of blocks in each slot of the inventory"""
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
+        #A list of all the images to print in the top left
         image_list = [grass, dirt, stone, spring]
+        #For loop to print the inventory for every item in the inventoryy
         for bin in range(len(self.bin_list)):
-            #rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
-            #rectangle.draw_rectangle()
+            #checks what type of block and prints that type
             if bin+1 == 1:
                 screen.blit(grass,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 2:
@@ -343,12 +384,12 @@ class Inventory():
                 screen.blit(stone,(self.x_pos, self.y_pos + bin*self.bin_height))
             if bin+1 == 4:
                 screen.blit(spring,(self.x_pos, self.y_pos + bin*self.bin_height))
-            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
+            #prints the number of items in the inventory in that slot
+            text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 30, WHITE)
             text.print_text()
+        #prints the current block and the text for it.
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
         text2.print_text()
-        #current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
-        #current_block.draw_rectangle()
         screen.blit(image_list[current_block_index-1],(self.x_pos, self.y_pos + bin*self.bin_height + 80))
 
 def level_two_map():
