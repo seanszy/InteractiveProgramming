@@ -97,14 +97,14 @@ class Player():
                 self.y = (self.ygrid)*40
                 self.jump = 1
                 if block_below == 5:
-                    self.jumps()
+                    self.super_jump()
         elif block_below !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
             if block_below == 5 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] == 5:
-                self.jumps()
+                self.super_jump()
 
     def left_collision(self, field):
         if self.x%40 == 0:
@@ -158,7 +158,6 @@ class Player():
             self.x += 4
 
         self.y = self.y + self.velocity
-        #pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
         screen.blit(img,(self.x,self.y))
 
     def draw_shot(self):
@@ -168,6 +167,10 @@ class Player():
 
     def jumps(self):
         self.velocity = -9
+        self.fall = 'on'
+
+    def super_jump(self):
+        self.velocity = -13
         self.fall = 'on'
 
 
@@ -224,7 +227,7 @@ def menu():
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
-        bin_list = [0, 0, 0]
+        bin_list = [0, 0, 0, 0]
         bin_list_item = [BLACK, RED, BLACK, GREEN]
         self.init_quantity = init_quantity
         self.x_pos = x_pos
@@ -242,17 +245,15 @@ class Inventory():
 
     def add_to_inventory(self, mouse, field, player_x, player_y):
         mouse_x_grid = mouse[0] // 40
-        mouse_y_grid = mouse [1] // 40
+        mouse_y_grid = mouse[1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
         block_type = field.matrix[mouse_y_grid][mouse_x_grid]
         if block_type != 4:
-            if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) <5:
+            if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
                 if self.bin_list[block_type-1] < 64:
                     if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
                         self.bin_list[block_type-1] += 1
-                        x_bin = (mouse[0]//40)*40
-                        y_bin = (mouse[1]//40)*40
                         field.matrix[mouse[1]//40][mouse[0]//40] = 0
                         self.update_bin_width(block_type)
 
@@ -267,7 +268,7 @@ class Inventory():
             if (check_top_player== False) and (check_bottom_player== False):
                 if field.matrix[mouse[1]//40][mouse[0]//40] == 0:
                     if self.bin_list[block_type-1] > 0:
-                        if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid - 1) < 5:
+                        if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
                                 self.bin_list[block_type-1] -= 1
                                 mouse_x_to_grid = (mouse[0]//40)*40
                                 mouse_y_to_grid = (mouse[1]//40)*40
