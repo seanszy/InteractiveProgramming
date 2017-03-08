@@ -68,8 +68,9 @@ class Field():
             self.blocks.remove(block)
 
     def matrix_print(self):
+        print("Matrix")
         for rows in self.matrix:
-            print(rows)
+            print(rows, ",")
 
 class Player():
     def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off', jump=0):
@@ -147,7 +148,7 @@ class Player():
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
 
-    def draw(self, img):
+    def draw(self, amon_picture):
         if self.fall == 'on':
             self.velocity += self.acceleration_constant
 
@@ -159,7 +160,7 @@ class Player():
 
         self.y = self.y + self.velocity
         #pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
-        screen.blit(img,(self.x,self.y))
+        screen.blit(amon_picture,(self.x,self.y))
 
     def draw_shot(self):
         self.x = self.x + 10
@@ -184,8 +185,8 @@ class Text():
         label = font.render(self.text, 40, self.color)
         screen.blit(label, (self.x_pos, self.y_pos))
 
-def menu():
-    menu_screen = True
+def menu(previous_level_select):
+    level_select = "Menu"
     done = False
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -193,8 +194,17 @@ def menu():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:  # If user hit q or closed")
                 done = True
-            if event.key == pygame.K_p:
-                menu_screen = False
+            if previous_level_select is "unknown":
+                if event.key == pygame.K_8:
+                    level_select = "Level_One"
+                if event.key == pygame.K_9:
+                    level_select = "Level_Two"
+                if event.key == pygame.K_p:
+                    level_select = "Level_One"
+            else:
+                print("going previous", previous_level_select)
+                if event.key == pygame.K_p:
+                    level_select = previous_level_select
             #if event.key == pygame.K_r:
             #    player = Player()
     screen.fill(WHITE)
@@ -214,7 +224,7 @@ def menu():
         text_list.append(texts)
     for texts in text_list:
         texts.print_text()
-    return [menu_screen, done]
+    return [level_select, done]
 
 class Inventory():
     def __init__(self, init_quantity, x_pos, y_pos, bin_height, bin_width):#, init_quantity, x_pos = 20, y_pos, bin_height, bin_width):
@@ -307,131 +317,190 @@ class Inventory():
         #current_block.draw_rectangle()
         screen.blit(image_list[current_block_index-1],(self.x_pos, self.y_pos + bin*self.bin_height + 80))
 
+def level_two_map():
+    matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ,
+    [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0] ,
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0] ,
+    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0] ,
+    [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0] ,
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    return matrix
+
+
+def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select):
+    level_variable = "open"
+    player.fall = 'on'
+    field.matrix_update(inventory_block_index)
+    next_y = player.velocity
+    player.player_in_grid()
+    player.left_collision(field)
+    player.top_collision(field)
+    player.bottom_collision(field, next_y)
+    previous_level_select = str(level)
+    clock.tick(40)
+    keys = pygame.key.get_pressed()
+    player.left = 'off'
+    player.right = 'off'
+
+    if keys[pygame.K_a]:
+        player_left_move = player.left_collision(field)
+        if player_left_move is True:
+            player.left = 'on'
+        else:
+            player.left = 'off'
+    if keys[pygame.K_d]:
+        player_right_move = player.right_collision(field)
+        if player_right_move is True:
+            player.right = 'on'
+
+    #left
+    if player.x <= 0:
+        player.x = 0
+        player.jump = 1
+    if player.x >= 1800:
+        player.x = 1800
+        player.jump = 1
+    if player.y >= 840:
+        player.y = 840
+        player.velocity = 0
+        player.jump = 1
+        player.fall = 'off'
+    if mouse2[0] == 1:
+        inventory.add_to_inventory(mouse, field, player.x, player.y)
+    if mouse2[2] == 1:
+        inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
+    for event in pygame.event.get():  # User did something
+
+        if event.type == pygame.QUIT:  # If user hit q or closed
+            done = True
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_w:
+                if player.jump == 1:
+                    player.jumps()
+                player.jump = 0
+            if event.key == pygame.K_p:
+                level_select = "Menu"
+            if event.key == pygame.K_c:
+                player_color += 1
+                if player_color == 3:
+                    player_color = 0
+                player.color = color_matrix[player_color]
+
+            if event.key == pygame.K_o:
+                field.matrix_print()
+            # inventory
+            if event.key == pygame.K_1:
+                inventory_block_index = 1
+            if event.key == pygame.K_2:
+                inventory_block_index = 2
+            if event.key == pygame.K_3:
+                inventory_block_index = 3
+
+            if event.key == pygame.K_8:
+                level_select = "Level_One"
+            if event.key == pygame.K_9:
+                level_select = "Level_Two"
+
+            if event.key == pygame.K_q:
+                pygame.quit()
+                return
+
+    # View-------------------------------------------------------------
+    screen.fill(WHITE)
+
+    # draw color matric and main rectangle
+    # for block in field.blocks:
+    #    block.draw_with_outline()
+
+    row_count = -1
+    for row in field.matrix:
+        column_count = -1
+        row_count += 1
+        for column in row:
+            column_count+=1
+            if field.matrix[row_count][column_count] != 0:
+                if field.matrix[row_count][column_count] == 5:
+                    # rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
+                    rectangle = Rectangle(column_count*40, row_count*40, 40, 40)
+                    rectangle.draw_rectangle()
+                if field.matrix[row_count][column_count] == 1:
+                    screen.blit(grass,(column_count*40, row_count*40))
+                if field.matrix[row_count][column_count] == 2:
+                    screen.blit(dirt, (column_count*40, row_count*40))
+                if field.matrix[row_count][column_count] == 3:
+                    screen.blit(stone, (column_count*40, row_count*40))
+                if field.matrix[row_count][column_count] == 4:
+                    screen.blit(bedrock, (column_count*40, row_count*40))
+    inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock)
+    player.draw(amon_picture)
+    return [level_select, inventory_block_index, previous_level_select, mouse]
+
 #Control
 def main():
     #color_matrix = [BLACK, BLUE, GREEN, RED]
-    pygame.display.set_caption("Game!")
     clock = pygame.time.Clock()
+    previous_level_select = "unknown"
     player_color = 0
-    menu_screen = True
+    level_select = "Menu"
     done = False
     player = Player()
     field = Field()
+    field2 = Field()
+    field2.matrix = level_two_map()
+    player2 = Player()
+    player2.x = 0
     inventory = Inventory(0, 0, 20, 40, 40)
+    inventory2 = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 1
-    img = pygame.image.load('amon.png')
+    inventory_block_index2 = 1
+    amon_picture = pygame.image.load('amon.png')
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
     dirt = pygame.image.load("dirt.png")
+    soulsand = pygame.image.load("soulsand.png")
+    netherack = pygame.image.load("netherack.png")
+    netherquartz = pygame.image.load("netherquartz.png")
     bedrock = pygame.image.load("bedrock.png")
 ### CONTROL
     while not done:
-        player.fall = 'on'
-        field.matrix_update(inventory_block_index)
-        next_y = player.velocity
-        player.player_in_grid()
-        player.left_collision(field)
-        player.top_collision(field)
-        player.bottom_collision(field, next_y)
+        pygame.display.set_caption(level_select)
         mouse = pygame.mouse.get_pos()
         mouse2 = pygame.mouse.get_pressed()
-        if menu_screen is True:
-            returned = menu()
-            menu_screen = returned[0]
+        if level_select is "Menu":
+            returned = menu(previous_level_select)
+            level_select = returned[0]
             done = returned[1]
-        if menu_screen is False:
-            clock.tick(40)
-            keys = pygame.key.get_pressed()
-            player.left = 'off'
-            player.right = 'off'
-
-            if keys[pygame.K_a]:
-                player_left_move = player.left_collision(field)
-                if player_left_move is True:
-                    player.left = 'on'
-                else:
-                    player.left = 'off'
-            if keys[pygame.K_d]:
-                player_right_move = player.right_collision(field)
-                if player_right_move is True:
-                    player.right = 'on'
-
-            #left
-            if player.x <= 0:
-                player.x = 0
-                player.jump = 1
-            if player.x >= 1800:
-                player.x = 1800
-                player.jump = 1
-            if player.y >= 840:
-                player.y = 840
-                player.velocity = 0
-                player.jump = 1
-                player.fall = 'off'
-            if mouse2[0] == 1:
-                inventory.add_to_inventory(mouse, field, player.x, player.y)
-            if mouse2[2] == 1:
-                inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
-            for event in pygame.event.get():  # User did something
-
-                if event.type == pygame.QUIT:  # If user hit q or closed
-                    done = True
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_w:
-                        if player.jump == 1:
-                            player.jumps()
-                        player.jump = 0
-                    if event.key == pygame.K_p:
-                        menu_screen = True
-                    if event.key == pygame.K_c:
-                        player_color += 1
-                        if player_color == 3:
-                            player_color = 0
-                        player.color = color_matrix[player_color]
-
-                    if event.key == pygame.K_o:
-                        field.matrix_print()
-                    # inventory
-                    if event.key == pygame.K_1:
-                        inventory_block_index = 1
-                    if event.key == pygame.K_2:
-                        inventory_block_index = 2
-                    if event.key == pygame.K_3:
-                        inventory_block_index = 3
-
-                    if event.key == pygame.K_q:
-                        pygame.quit()
-                        return
-
-            # View-------------------------------------------------------------
-            screen.fill(WHITE)
-
-            # draw color matric and main rectangle
-            # for block in field.blocks:
-            #    block.draw_with_outline()
-
-            row_count = -1
-            for row in field.matrix:
-                column_count = -1
-                row_count += 1
-                for column in row:
-                    column_count+=1
-                    if field.matrix[row_count][column_count] != 0:
-                        if field.matrix[row_count][column_count] == 5:
-                            # rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
-                            rectangle = Rectangle(column_count*40, row_count*40, 40, 40)
-                            rectangle.draw_rectangle()
-                        if field.matrix[row_count][column_count] == 1:
-                            screen.blit(grass,(column_count*40, row_count*40))
-                        if field.matrix[row_count][column_count] == 2:
-                            screen.blit(dirt, (column_count*40, row_count*40))
-                        if field.matrix[row_count][column_count] == 3:
-                            screen.blit(stone, (column_count*40, row_count*40))
-                        if field.matrix[row_count][column_count] == 4:
-                            screen.blit(bedrock, (column_count*40, row_count*40))
-            inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock)
-            player.draw(img)
+        if level_select is "Level_One":
+            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select)
+            level_select = level_one[0]
+            inventory_block_index = level_one[1]
+            previous_level_select = level_one[2]
+            mouse = level_one[3]
+        if level_select is "Level_Two":
+            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select)
+            level_select = level_two[0]
+            inventory_block_index2 = level_two[1]
+            previous_level_select = level_two[2]
+            mouse = level_two[3]
         pygame.display.flip()
     pygame.quit()
 
