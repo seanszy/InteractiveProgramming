@@ -323,13 +323,13 @@ def main():
             player.left = 'off'
             player.right = 'off'
 
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_a]:
                 player_left_move = player.left_collision(field)
                 if player_left_move is True:
                     player.left = 'on'
                 else:
                     player.left = 'off'
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_d]:
                 player_right_move = player.right_collision(field)
                 if player_right_move is True:
                     player.right = 'on'
@@ -350,7 +350,7 @@ def main():
                     done = True
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_w:
                         if player.jump == 1:
                             player.jumps()
                         player.jump = 0
