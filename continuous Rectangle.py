@@ -1,15 +1,16 @@
 import pygame
 
-pygame.init()
-size = [1840, 920]
+#initialize values used throughout the entire game
+pygame.init() #initialize pygame
+size = [1840, 920] #size of screen
 screen = pygame.display.set_mode(size)
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
 BLUE =  (  0,   0, 255)
 GREEN = (  20, 255,   20)
 RED =   (255,   0,   0)
-block_size = 40
 color_matrix = [BLACK, BLUE, GREEN, RED]
+block_size = 40 #width/length of blocks in pixels
 text_x = 20
 text_y = 200
 jump = 0
