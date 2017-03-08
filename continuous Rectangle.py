@@ -76,7 +76,7 @@ class Field():
             print(rows, ",")
 
 class Player():
-    def __init__(self, x=40, y=700, width=40, height=80, color=GREEN, velocity=0, fall='on', left='off', right='off', jump=0):
+    def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0, fall='on', left='off', right='off', jump=0):
 
         self.x = x
         self.y = y
@@ -151,7 +151,7 @@ class Player():
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
 
-    def draw(self, amon_picture):
+    def draw(self, amon_picture, sean, colvin):
         if self.fall == 'on':
             self.velocity += self.acceleration_constant
 
@@ -163,7 +163,13 @@ class Player():
 
         self.y = self.y + self.velocity
         #pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
-        screen.blit(amon_picture,(self.x,self.y))
+        print(self.color)
+        if self.color == 0:
+            screen.blit(amon_picture,(self.x,self.y))
+        if self.color == 1:
+            screen.blit(sean,(self.x,self.y))
+        if self.color == 2:
+            screen.blit(colvin,(self.x,self.y))
 
     def draw_shot(self):
         self.x = self.x + 10
@@ -216,17 +222,19 @@ def menu(previous_level_select):
             #    player = Player()
     screen.fill(WHITE)
     text_list = []
-    text1 = Text("Sean and Colvin's Game", 150, 50, 100, RED)
-    text2 = Text("Instructions:", 50, 250, 60, BLUE)
-    text3 = Text("-Press Left or Right to Move", 100, 350, 60, BLACK)
-    text4 = Text("-Press J to Jump", 100, 450, 60, BLACK)
-    text5 = Text("-Press Q to Quit", 100, 550, 60, BLACK)
-    text7 = Text("-Your Inventory is in the upper left. Cycle through which item to drop by pressing 1, 2, and 3", 100, 700, 30, BLACK)
-    text8 = Text("-Add items to that slot by pressing E, and drop them into the world by pressing R", 100, 800, 30, BLACK)
-    text9 = Text("-Which Block you will drop is shown by the \"Current Block\" space in your inventory", 100, 750, 30, BLACK)
-    #text6 = Text("Press R to Restart the Game", 100, 650, 60, RED)
-    text6 = Text("While In Game Press P to Return to Game", 100, 850, 60, RED)
-    text_add_list = [text1, text2, text3, text4, text4, text5, text6, text7, text8, text9]
+    text1 = Text("Bounce Bounce Play Time", 150, 50, 100, RED)
+    text2 = Text("Instructions:", 50, 200, 60, BLUE)
+    text3 = Text("-This is a rudimentary version of Minecraft. Use w, a, s, d to move.", 100, 300, 30, BLACK)
+    text4 = Text("-You can move around the world and change the blocks within it.", 100, 350, 30, BLACK)
+    text5 = Text("-Your inventory is in the upper left. Cycle through which item to drop with 1, 2, 3, and 4", 100, 400, 30, BLACK)
+    text6 = Text("-Use left click to pick up items and right click to drop them", 100, 450, 30, BLACK)
+    text7 = Text("-Which block you will drop is shown by the \"Current Block\" space in your inventory", 100, 500, 30, BLACK)
+    text8 = Text("-There are multiple worlds to choose from. Press 8 or 9 to enter a different world.",  100, 550, 30, BLACK)
+    text9 = Text("-Pause with P, and return to your previous world by pressing P again.", 100, 600, 30, BLACK)
+    text10 = Text("-Press Q to quit the program", 100, 650, 30, BLACK)
+    text11 = Text("-You can also change your character by pressing C",  100, 700, 30, BLACK)
+    text12 = Text("-Trampolines will make you jump extra high when you land on them",  100, 750, 30, BLACK)
+    text_add_list = [text1, text2, text3, text4, text5, text6, text7, text8, text9, text10, text11, text12]
     for texts in text_add_list:
         text_list.append(texts)
     for texts in text_list:
@@ -350,7 +358,7 @@ def level_two_map():
     return matrix
 
 
-def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select, spring):
+def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select, spring, player_color, done, sean, colvin):
     level_variable = "open"
     player.fall = 'on'
     field.matrix_update(inventory_block_index)
@@ -393,6 +401,7 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
     for event in pygame.event.get():  # User did something
 
         if event.type == pygame.QUIT:  # If user hit q or closed
+            print("HELLO")
             done = True
 
         if event.type == pygame.KEYDOWN:
@@ -403,10 +412,12 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
             if event.key == pygame.K_p:
                 level_select = "Menu"
             if event.key == pygame.K_c:
+                print(player_color, "C")
                 player_color += 1
+                print(player_color, "A")
                 if player_color == 3:
                     player_color = 0
-                player.color = color_matrix[player_color]
+                player.color = player_color
 
             if event.key == pygame.K_o:
                 field.matrix_print()
@@ -454,8 +465,8 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
                 if field.matrix[row_count][column_count] == 9:
                     screen.blit(bedrock, (column_count*40, row_count*40))
     inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock, spring)
-    player.draw(amon_picture)
-    return [level_select, inventory_block_index, previous_level_select]
+    player.draw(amon_picture, sean, colvin)
+    return [level_select, inventory_block_index, previous_level_select, player_color, done]
 
 #Control
 def main():
@@ -463,6 +474,7 @@ def main():
     clock = pygame.time.Clock()
     previous_level_select = "unknown"
     player_color = 0
+    player_color2 = 1
     level_select = "Menu"
     done = False
     player = Player()
@@ -484,6 +496,8 @@ def main():
     netherquartz = pygame.image.load("netherquartz.png")
     bedrock = pygame.image.load("bedrock.png")
     spring = pygame.image.load("spring.png")
+    sean = pygame.image.load("sean.png")
+    colvin = pygame.image.load("colvin.png")
 ### CONTROL
     while not done:
         pygame.display.set_caption(level_select)
@@ -495,15 +509,19 @@ def main():
             level_select = returned[0]
             done = returned[1]
         if level_select is "Level_One":
-            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring)
+            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring, player_color, done, sean, colvin)
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
+            player_color = level_one[3]
+            done = level_one[4]
         if level_select is "Level_Two":
-            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring)
+            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring, player_color2, done, sean, colvin)
             level_select = level_two[0]
             inventory_block_index2 = level_two[1]
             previous_level_select = level_two[2]
+            player_color = level_two[3]
+            done = level_two[4]
         pygame.display.flip()
     pygame.quit()
 
