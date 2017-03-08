@@ -379,10 +379,8 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedro
     #left
     if player.x <= 0:
         player.x = 0
-        player.jump = 1
     if player.x >= 1800:
         player.x = 1800
-        player.jump = 1
     if player.y >= 840:
         player.y = 840
         player.velocity = 0
