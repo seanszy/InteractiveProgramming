@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import*
 
 pygame.init()
 size = [1840, 920]
@@ -49,7 +50,7 @@ class Field():
 
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
-                rectangle_color = color_matrix[color]
+                rectangle_color = color_matrix[1]
                 block_x = column*block_size
                 block_y = size[1]-block_size*row - block_size
                 block = Rectangle(block_x, block_y,
@@ -80,7 +81,7 @@ class Player():
 
 
     def bottom_collision(self, field, next_y):
-        self.jump = 1
+        self.jump = 0
         # nexty_index = (self.y + next_y)//40
         # print(next_y,nexty_index)
         # if self.y + next_y > self.ygrid*40:
@@ -103,11 +104,12 @@ class Player():
                 self.fall = "off"
                 self.velocity = 0
                 self.y = (self.ygrid)*40
+                self.jump = 1
         elif field.matrix[int(self.ygrid+2)][int(self.xgrid)] !=0 or field.matrix[int(self.ygrid+2)][int(self.xgrid+1)] !=0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
-
+            self.jump = 1
     def left_collision(self, field):
         if self.x%40 == 0:
             if self.y%40 == 0:
@@ -156,7 +158,7 @@ class Player():
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
 
-    def draw(self):
+    def draw(self, img):
         if self.fall == 'on':
             self.velocity += self.acceleration_constant
 
@@ -167,8 +169,8 @@ class Player():
             self.x += 4
 
         self.y = self.y + self.velocity
-        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
-
+        #pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
+        screen.blit(img,(self.x,self.y))
 
     def draw_shot(self):
         self.x = self.x + 10
@@ -177,7 +179,7 @@ class Player():
 
 
     def jumps(self):
-        self.velocity = -12
+        self.velocity = -9
         self.fall = 'on'
 
 
@@ -297,6 +299,9 @@ def main():
     field = Field()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 2
+    img = pygame.image.load('amon.png')
+    grass = pygame.image.load("grass.png")
+    stone = pygame.image.load("stone.png")
 ### CONTROL
     while not done:
         player.fall = 'on'
@@ -385,11 +390,14 @@ def main():
                 for column in row:
                     column_count+=1
                     if field.matrix[row_count][column_count] != 0:
-                        rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
-                        rectangle.draw_with_outline()
-
+                        #rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
+                        #rectangle.draw_with_outline()
+                        if field.matrix[row_count][column_count] == 2:
+                            screen.blit(grass,(column_count*40, row_count*40))
+                        if field.matrix[row_count][column_count] == 1:
+                            screen.blit(stone, (column_count*40, row_count*40))
             inventory.draw_inventory(field, inventory_block_index)
-            player.draw()
+            player.draw(img)
         pygame.display.flip()
     pygame.quit()
 
