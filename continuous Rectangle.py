@@ -48,14 +48,16 @@ class Field():
             for j in range(size[0]//40):
                 inner.append(0)
 
+        print(num_rows)
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
-                rectangle_color = color_matrix[1]
-                block_x = column*block_size
-                block_y = size[1]-block_size*row - block_size
-                block = Rectangle(block_x, block_y,
-                              block_size, block_size, rectangle_color)
-                self.blocks.append(block)
+                self.matrix[row+20][column] = row+1
+                #rectangle_color = color_matrix[1]
+                #block_x = column*block_size
+                #block_y = size[1]-block_size*row - block_size
+                #block = Rectangle(block_x, block_y,
+                #              block_size, block_size, rectangle_color)
+                #self.blocks.append(block)
 
     def matrix_update(self, block_type):
         for block in self.blocks:
@@ -245,11 +247,12 @@ class Inventory():
         else:
             self.bin_width = block_size
 
-    def add_to_inventory(self, block_type, mouse, field, player_x, player_y):
+    def add_to_inventory(self, mouse, field, player_x, player_y):
         mouse_x_grid = mouse[0] // 40
         mouse_y_grid = mouse [1] // 40
         player_x_grid = player_x//40
         player_y_grid = player_y//40
+        block_type = field.matrix[mouse_y_grid][mouse_x_grid]
         if abs(mouse_x_grid - player_x_grid) < 5 and abs(mouse_y_grid - player_y_grid) <5:
             if self.bin_list[block_type-1] < 64:
                 if field.matrix[mouse[1]//40][mouse[0]//40] != 0:
@@ -274,18 +277,26 @@ class Inventory():
                         field.blocks.append(drop_block)
         self.update_bin_width(block_type)
 
-    def draw_inventory(self, field,  current_block_index):
+    def draw_inventory(self, field,  current_block_index, grass, stone, dirt):
         text = Text("Inventory:", self.x_pos, self.y_pos-20, 20, RED)
         text.print_text()
+        image_list = [grass, dirt, stone]
         for bin in range(len(self.bin_list)):
-            rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
-            rectangle.draw_rectangle()
+            #rectangle = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height, self.bin_width, self.bin_height, self.bin_list_item[bin+1])
+            #rectangle.draw_rectangle()
+            if bin+1 == 1:
+                screen.blit(grass,(self.x_pos, self.y_pos + bin*self.bin_height))
+            if bin+1 == 2:
+                screen.blit(dirt,(self.x_pos, self.y_pos + bin*self.bin_height))
+            if bin+1 == 3:
+                screen.blit(stone,(self.x_pos, self.y_pos + bin*self.bin_height))
             text = Text(str(self.bin_list[bin]), self.x_pos+ 5, self.y_pos + bin*self.bin_height, 40, WHITE)
             text.print_text()
         text2 = Text("Current Block:", self.x_pos, self.y_pos + bin*self.bin_height+60, 20, RED)
         text2.print_text()
-        current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
-        current_block.draw_rectangle()
+        #current_block = Rectangle(self.x_pos, self.y_pos + bin*self.bin_height + 80, self.bin_width, self.bin_height, self.bin_list_item[current_block_index])
+        #current_block.draw_rectangle()
+        screen.blit(image_list[current_block_index-1],(self.x_pos, self.y_pos + bin*self.bin_height + 80))
 
 #Control
 def main():
@@ -302,6 +313,7 @@ def main():
     img = pygame.image.load('amon.png')
     grass = pygame.image.load("grass.png")
     stone = pygame.image.load("stone.png")
+    dirt = pygame.image.load("dirt.png")
 ### CONTROL
     while not done:
         player.fall = 'on'
@@ -341,7 +353,7 @@ def main():
                 player.jump = 1
                 player.fall = 'off'
             if mouse2[0] == 1:
-                inventory.add_to_inventory(inventory_block_index, mouse, field, player.x, player.y)
+                inventory.add_to_inventory(mouse, field, player.x, player.y)
             if mouse2[2] == 1:
                 inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
             for event in pygame.event.get():  # User did something
@@ -392,11 +404,13 @@ def main():
                     if field.matrix[row_count][column_count] != 0:
                         #rectangle = Rectangle(column_count*40, row_count*40, 40, 40, inventory.bin_list_item[field.matrix[row_count][column_count]])
                         #rectangle.draw_with_outline()
-                        if field.matrix[row_count][column_count] == 2:
-                            screen.blit(grass,(column_count*40, row_count*40))
                         if field.matrix[row_count][column_count] == 1:
+                            screen.blit(grass,(column_count*40, row_count*40))
+                        if field.matrix[row_count][column_count] == 2:
+                            screen.blit(dirt, (column_count*40, row_count*40))
+                        if field.matrix[row_count][column_count] == 3:
                             screen.blit(stone, (column_count*40, row_count*40))
-            inventory.draw_inventory(field, inventory_block_index)
+            inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt)
             player.draw(img)
         pygame.display.flip()
     pygame.quit()
