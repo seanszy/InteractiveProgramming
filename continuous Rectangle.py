@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import*
 
 pygame.init()
 size = [1840, 920]
@@ -18,6 +17,12 @@ jump = 0
 
 ### Model
 class Rectangle():
+    """Used when initializing block objects. These block objects are later put into the field matrix.
+    has atributes for:
+    x and y position   -  the upper-left pixel of each block
+    width and height of the block
+    color of block as an RGB value
+    """
     def __init__(self, x=10, y=10, width=20, height=10, color=BLUE):
         self.x = x
         self.y = y
@@ -27,19 +32,28 @@ class Rectangle():
 
     #draws the rectangles that are dropped
     def draw_rectangle(self):
+        """Uses pygame to draw the rectangle on the screen
+        -filled solid with color
+        """
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
     def draw_with_outline(self):
+        """Uses pygame to draw the rectangle on the screen
+        -as a colored outline
+        """
         pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height], 1)
 
 
-    def draw_shot(self):
-        self.x = self.x
-        self.y = self.y
-        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
-
 class Field():
+    """ Used when creating and storing the blocks in the field.
+    Contains following atributes:
+    blocks - a list of block objects
+    matrix - a matrix with each value equal to the block type in that position
+           - This is helpful because you don't need to iterate through every
+             block on the map to look for collisions
+             """
     def __init__(self, num_rows=4, color=0):
+        """ initializing field using an algorithm"""
         self.blocks = []
         self.matrix = []
         inner = []
@@ -54,30 +68,33 @@ class Field():
                     self.matrix[row+19][column] = 9
                 else:
                     self.matrix[row+19][column] = row+1
-
+                    # setting up the trmpoline
         self. matrix[18][15] = 4
-        self.matrix_print()
-
-                #rectangle_color = color_matrix[1]
-                #block_x = column*block_size
-                #block_y = size[1]-block_size*row - block_size
-                #block = Rectangle(block_x, block_y,
-                #block_size, block_size, rectangle_color)
-                #self.blocks.append(block)
 
     def matrix_update(self, block_type):
+        """Uses the block objects in the list of blocks to update the matrix used to detect collisions"""
         for block in self.blocks:
             self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
             self.blocks.remove(block)
 
     def matrix_print(self):
+        """Prints the matrix in a format that is easy to read"""
         print("Matrix")
         for rows in self.matrix:
             print(rows, ",")
 
 class Player():
-    def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0, fall='on', left='off', right='off', jump=0):
+    """Contains Atributes and Methods regarding the player's position,
+    appearance, and motion.
+        """
 
+    def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0, fall='on', left='off', right='off', jump=0):
+        """The first 5 atributes are the same as the Rectangle class above.
+        velocity - change in y position for each time step.
+        acceleration_constant - change in velocity if falling
+        fall - whether the player should be falling
+        jump - whether the player is allowed to jump or not
+            """
         self.x = x
         self.y = y
         self.width = width
@@ -92,6 +109,9 @@ class Player():
 
 
     def bottom_collision(self, field, next_y):
+        """ stops the player's downward movement if his vertical position is
+        colliding with a block."""
+        """Also makes the player bounce if this block is a trmpoline"""
         self.jump = 0
         block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
         if self.x % 40 == 0:
@@ -170,11 +190,6 @@ class Player():
             screen.blit(sean,(self.x,self.y))
         if self.color == 2:
             screen.blit(colvin,(self.x,self.y))
-
-    def draw_shot(self):
-        self.x = self.x + 10
-        self.y = self.y
-        pygame.draw.rect(screen, self.color, [self.x, self.y, self.width, self.height])
 
     def jumps(self):
         self.velocity = -9
@@ -359,8 +374,11 @@ def level_two_map():
     return matrix
 
 
-def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, level, previous_level_select, spring, player_color, done, sean, colvin):
-    level_variable = "open"
+def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
+                  bedrock, amon_picture, inventory, inventory_block_index,
+                  level_select, level, previous_level_select, spring,
+                  player_color, done, sean, colvin):
+
     player.fall = 'on'
     field.matrix_update(inventory_block_index)
     next_y = player.velocity
