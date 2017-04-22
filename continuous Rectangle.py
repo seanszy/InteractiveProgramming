@@ -3,16 +3,18 @@ import pygame
 """ The following section of the script initializes a few global varables that
 are helpful to reference at any point in the program."""
 
-pygame.init() # initialize pygame
-size = [1840, 920] # size of screen
+pygame.init()
+size = [1840, 920]
 screen = pygame.display.set_mode(size)
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
 BLUE =  (  0,   0, 255)
 GREEN = (  20, 255,   20)
 RED =   (255,   0,   0)
+block_size = 40
 color_matrix = [BLACK, BLUE, GREEN, RED]
-block_size = 40 # width/length of blocks in pixels
+text_x = 20
+text_y = 200
 jump = 0
 
 
@@ -60,46 +62,45 @@ class Field():
         self.blocks = []
         self.matrix = []
         inner = []
-        # makes a matrix that is the shape of the field
-        # adds an extra row to width and height to prevent out of bounds errors
         for i in range(size[1]//40+1):
             inner = []
             self.matrix.append(inner)
             for j in range(size[0]//40+1):
                 inner.append(0)
-        # adds blocks to the first 4 rows of the field
         for row in range(num_rows):
             for column in range(int(size[0]/block_size)):
                 if row == 3:
                     self.matrix[row+19][column] = 9
                 else:
                     self.matrix[row+19][column] = row+1
-        self.matrix[18][15] = 4  # add trampoline
+                    # setting up the trampoline
+        self. matrix[18][15] = 4
 
     def matrix_update(self, block_type):
-        """Uses the block objects in the list of blocks to update the field matrix
-        used to detect collisions. The block is then removed from the list"""
+        """Uses the block objects in the list of blocks to update the matrix
+        used to detect collisions"""
         for block in self.blocks:
             self.matrix[int(block.y//block_size)][int(block.x//block_size)] = block_type
             self.blocks.remove(block)
 
     def matrix_print(self):
-        """Prints the field matrix in a format that is easy to read"""
+        """Prints the matrix in a format that is easy to read"""
         print("Matrix")
         for rows in self.matrix:
             print(rows, ",")
 
-
-class Unit():
+class Player():
+    """Contains Atributes and Methods regarding the player's position,
+    appearance, and motion.
+        """
 
     def __init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0,
-                 fall='on', left='off', right='off', jump=0, health=100):
-        """super Class that Player and Enemy classes inherit from
-        The first 5 attributes are the same as the Rectangle class above.
+                 fall='on', left='off', right='off', jump=0):
+        """The first 5 atributes are the same as the Rectangle class above.
         velocity - change in y position for each time step.
         acceleration_constant - change in velocity if falling
-        fall - whether the unit should be falling
-        jump - whether the unit is allowed to jump or not
+        fall - whether the player should be falling
+        jump - whether the player is allowed to jump or not
             """
         self.x = x
         self.y = y
@@ -112,16 +113,14 @@ class Unit():
         self.right = right
         self.acceleration_constant = .6
         self.jump = jump
-        self.health = health
 
-    def bottom_collision(self, field):
+    def bottom_collision(self, field, next_y):
         """ stops the player's downward movement if his vertical position is
-        colliding with a block and allows him to jump again."""
-        """Also makes the player bounce if this block is a trampoline"""
+        colliding with a block."""
+        """Also makes the player bounce if this block is a trmpoline"""
         self.jump = 0
         block_below = field.matrix[int(self.ygrid+2)][int(self.xgrid)]
         block_below_right = field.matrix[int(self.ygrid+2)][int(self.xgrid+1)]
-        # below is for if the player is directly over a block
         if self.x % 40 == 0:
             if block_below != 0:
                 self.fall = "off"
@@ -129,28 +128,24 @@ class Unit():
                 self.y = (self.ygrid)*40
                 self.jump = 1
                 if block_below == 4:
-                    self.super_jump()  # trampoline jump
-        # below is for if the player is between two blocks
+                    self.super_jump()
         elif block_below != 0 or block_below_right != 0:
             self.fall = "off"
             self.velocity = 0
             self.y = (self.ygrid)*40
             self.jump = 1
             if block_below == 4 or block_below_right == 4:
-                self.super_jump()  # trampoline jump
+                self.super_jump()
 
     def left_collision(self, field):
         """Prohibits leftward movement if it would bring the player inside a
         block or outside the screen."""
-        # collisions occur when the block is directly over a block
         if self.x%40 == 0:
-            # if the player is not jumping only two blocks are checked
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0:
                     return False
                 else:
                     return True
-            # if the player is jumping more blocks must be checked for collisions
             elif field.matrix[int(self.ygrid)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid-1)] != 0 or field.matrix[int(self.ygrid+2)][int(self.xgrid-1)] != 0:
                 return False
             else:
@@ -159,8 +154,8 @@ class Unit():
             return True
 
     def right_collision(self, field):
-        """Prohibits rightward movement if it would bring the player inside a
-        block or outside the screen. Essentally the same as left_collision"""
+        """Prohibits leftward movement if it would bring the player inside a
+        block or outside the screen."""
         if self.x%40 == 0:
             if self.y%40 == 0:
                 if field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0 or field.matrix[int(self.ygrid+1)][int(self.xgrid+1)] != 0:
@@ -177,27 +172,44 @@ class Unit():
     def top_collision(self, field):
         """ prohibits movement if the player is going upwards through a block.
         Incorprorates a 50% bounce back velocity"""
-        if self.x % 40 == 0: #if directly over block
+        if self.x % 40 == 0:
             if field.matrix[int(self.ygrid)][int(self.xgrid)] != 0:
                 self.y = (self.ygrid+1)*40
                 self.velocity = self.velocity * -.5
-        # if between two blocks check more spots for collisions
         elif field.matrix[int(self.ygrid)][int(self.xgrid)] != 0 or field.matrix[int(self.ygrid)][int(self.xgrid+1)] != 0:
             self.velocity = self.velocity * -.5
             self.y = (self.ygrid+1)*40
 
-    def collisions(self, field):
-        # finds where in the matrix the player is
-        self.in_grid()
-        # top/bottom collisions
-        self.top_collision(field)
-        self.bottom_collision(field)
-
-    def in_grid(self):
-        """Finds the field matrix value that the player's position corresponds to
-        and stores this in the new atributes self.xgrid and self.ygrid"""
+    def player_in_grid(self):
+        """Finds the matrix value that the player's position corresponds to
+        stores this in the new atributes self.xgrid and self.ygrid"""
         self.xgrid = self.x//block_size
         self.ygrid = self.y//block_size
+
+    def draw(self, amon_picture, sean, colvin):
+        """ The actual printing of the player on the screen
+        This is where we excecute our movement if the player is supposed
+        to be moving or falling."""
+        if self.fall == 'on':
+            self.velocity += self.acceleration_constant
+
+        if self.left == 'on':
+            self.x += -4
+
+        if self.right == 'on':
+            self.x += 4
+
+            # update the y position
+        self.y = self.y + self.velocity
+
+           # change-able skins integrated here
+        print(self.color)
+        if self.color == 0:
+            screen.blit(amon_picture,(self.x,self.y))
+        if self.color == 1:
+            screen.blit(sean,(self.x,self.y))
+        if self.color == 2:
+            screen.blit(colvin,(self.x,self.y))
 
     def jumps(self):
         """regular jump function
@@ -213,118 +225,8 @@ class Unit():
         self.fall = 'on'
 
 
-class Player(Unit):
-    """Contains Atributes and Methods regarding the player's position,
-    appearance, and motion.
-        """
-
-    def __init__(self):
-        """The first 5 attributes are the same as the Rectangle class above.
-        velocity - change in y position for each time step.
-        acceleration_constant - change in velocity if falling
-        fall - whether the player should be falling
-        jump - whether the player is allowed to jump or not
-            """
-        Unit.__init__(self, x=40, y=700, width=40, height=80, color=0, velocity=0,
-                         fall='on', left='off', right='off', jump=0)
-        self.cooldown = 0
-        self.attack_speed = 15
-
-
-    def draw(self, amon_picture, sean, colvin):
-        """ The actual printing of the player on the screen
-        This is where we excecute our movement if the player is supposed
-        to be moving or falling."""
-        if self.fall == 'on':
-            #the player has a velocity to allow vertical position to change
-            #fluidly
-            self.velocity += self.acceleration_constant
-        if self.left == 'on':
-            self.x += -4
-
-        if self.right == 'on':
-            self.x += 4
-
-        # update the y position
-        self.y = self.y + self.velocity
-
-         # change-able skins integrated here
-        if self.color == 0:
-            screen.blit(amon_picture,(self.x,self.y))
-        if self.color == 1:
-            screen.blit(sean,(self.x,self.y))
-        if self.color == 2:
-            screen.blit(colvin,(self.x,self.y))
-
-    def attack(self, other_unit):
-        """decreases health of player"""
-        if self.cooldown < self.attack_speed:
-            self.cooldown += 1
-            return None
-        other_unit.health -= 35
-        self.cooldown = 0
-
-
-class Enemy(Unit):
-    """Enemies are zombie obects that inherit from the Unit class. The units
-    give damage when the unit is within reach, and move with a simple condition
-    based AI."""
-    def __init__(self):
-        Unit.__init__(self, x=1600, y=600, width=40, height=66, color=0,
-                      velocity=0, fall='on', left='off', right='off', jump=0)
-        self.lag = True
-        self.attack_speed = 30
-        self.cooldown = 0
-
-    def think(self, player, field):
-        """logic behind zombie's movement"""
-        if abs(player.x - self.x) < 2:
-            self.right = 'off'
-            self.left = 'off'
-        elif player.x > self.x and self.right_collision(field):
-            self.right = 'on'
-            self.left = 'off'
-
-        elif self.left_collision(field):
-            self.right = 'off'
-            self.left = 'on'
-
-        if self.right_collision(field) is False or self.left_collision(field) is False:
-            self.jumps()
-
-    def draw(self, zombie):
-        """ The actual printing of the player on the screen
-        This is where we excecute our movement if the player is supposed
-        to be moving or falling."""
-        if self.fall == 'on':
-            # the player has a velocity to allow vertical position to change
-            # fluidly
-            self.velocity += self.acceleration_constant
-
-        if self.left == 'on':
-            self.x += -2
-
-        if self.right == 'on':
-            self.x += 2
-        else:
-            self.left = 'off'
-            self.right = 'off'
-            self.lag = False
-        # update the y position
-        self.y = self.y + self.velocity
-        screen.blit(zombie, (self.x, self.y))
-
-    def attack(self, player):
-        """decreases health of player"""
-        if self.cooldown < self.attack_speed:
-            self.cooldown += 1
-            return None
-        player.health -= 20
-        self.cooldown = 0
-
-
 class Text():
-    """Used when forming all of our text boxes - especially in the menu"""
+    """ Used when forming all of our text boxes - especially in the menu"""
     def __init__(self, text, x_pos, y_pos, size, color):
         self.text = text
         self.x_pos = x_pos
@@ -333,7 +235,7 @@ class Text():
         self.color = color
 
     def print_text(self):
-        """ A pygame print function integrated into the Text class"""
+        """ A pygame pring function integrated into the Text class"""
         font = pygame.font.SysFont("monospace", self.size)
         label = font.render(self.text, 40, self.color)
         screen.blit(label, (self.x_pos, self.y_pos))
@@ -375,7 +277,7 @@ def menu(previous_level_select):
     # Fill the screen white and print a bunch of text.
     screen.fill(WHITE)
     text_list = []
-    text1 = Text("Bounce Block", 150, 50, 100, RED)
+    text1 = Text("Bounce Bounce Play Time", 150, 50, 100, RED)
     text2 = Text("Instructions:", 50, 200, 60, BLUE)
     text3 = Text("-This is a rudimentary version of Minecraft. Use w, a, s, d to move.", 100, 300, 30, BLACK)
     text4 = Text("-You can move around the world and change the blocks within it.", 100, 350, 30, BLACK)
@@ -451,17 +353,17 @@ class Inventory():
             check_bottom_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid+1)
             if (check_top_player== False) and (check_bottom_player== False):
                 if field.matrix[mouse[1]//40][mouse[0]//40] == 0: # A block cannot be placed if another block already is in that spot
-                    if self.bin_list[block_type-1] > 0:  # you must have at least one in your inventory to place
+                    if self.bin_list[block_type-1] > 0: #you must have at least one in your inventory to place
                         # T he range in which you can place a block is a circle with radius 5
                         if ((mouse_x_grid - player_x_grid)**2 + (mouse_y_grid - player_y_grid)**2)**.5 < 5:
-                                self.bin_list[block_type-1] -= 1  # subtract one from inventory
+                                self.bin_list[block_type-1] -= 1 # subtract one from inventory
                                 # place the block where your mouse is
                                 mouse_x_to_grid = (mouse[0]//40)*40
                                 mouse_y_to_grid = (mouse[1]//40)*40
                                 drop_block = Rectangle(mouse_x_to_grid, mouse_y_to_grid, 40, 40, self.bin_list_item[current_block_index])
                                 field.blocks.append(drop_block)
         else:
-            # In this case the player is halfway over a block, which means
+            # In this case the player is halway over a block, which means
             # that the player spans 4 blocks, and you should not be able to
             # place a block in any of these places
             check_top_left_player = (mouse_x_grid == player_x_grid and mouse_y_grid == player_y_grid)
@@ -540,15 +442,18 @@ def level_two_map():
 def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
                   bedrock, amon_picture, inventory, inventory_block_index,
                   level_select, level, previous_level_select, spring,
-                  player_color, done, sean, colvin, enemy1, zombie):
+                  player_color, done, sean, colvin):
     """This is the main function of the program. It contains the controller for the program
     user keystrokes and other actions are turned into actions in the game
     by referencing other funtions and classes."""
     player.fall = 'on'
-    enemy1.fall = 'on'
     field.matrix_update(inventory_block_index)
-    player.collisions(field)
-    enemy1.collisions(field)
+    next_y = player.velocity #how far the player will move on the next iteration
+    # finds where in the matrix the player is
+    player.player_in_grid()
+    # top/bottom collisions
+    player.top_collision(field)
+    player.bottom_collision(field, next_y)
     previous_level_select = str(level)
     clock.tick(40)
 
@@ -580,15 +485,13 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
         player.jump = 1
         player.fall = 'off'
 
-    enemy1.think(player, field)
-
     # pick up block
     if mouse2[0] == 1:
         inventory.add_to_inventory(mouse, field, player.x, player.y)
     # place block
     if mouse2[2] == 1:
         inventory.remove_from_inventory(field, inventory_block_index, player.x, player.y, inventory_block_index, mouse)
-    """ possible actions start here"""
+    # possible actions start here
     for event in pygame.event.get():
         # press teh x in the top left to quit
         if event.type == pygame.QUIT:
@@ -645,10 +548,10 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
         column_count = -1
         row_count += 1
         for column in row:
-            column_count += 1
+            column_count+=1
             if field.matrix[row_count][column_count] != 0:
                 if field.matrix[row_count][column_count] == 4:
-                    # based on the number entry in the matrix, it prints a different block
+                    #based on the number entry in the matrix, it prints a different block
                     screen.blit(spring, (column_count*40, row_count*40))
                 if field.matrix[row_count][column_count] == 1:
                     screen.blit(grass, (column_count*40, row_count*40))
@@ -660,11 +563,9 @@ def main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone,
                     screen.blit(bedrock, (column_count*40, row_count*40))
     inventory.draw_inventory(field, inventory_block_index, grass, stone, dirt, bedrock, spring)
     player.draw(amon_picture, sean, colvin)
-    enemy1.draw(zombie)
     return [level_select, inventory_block_index, previous_level_select, player_color, done]
 
-
-# Control
+#Control
 def main():
     """ The actual call of the start of the program.
     Main movement is referenced by this function.
@@ -684,8 +585,6 @@ def main():
     field2.matrix = level_two_map()
     player2 = Player()
     player2.x = 0
-
-    enemy1 = Enemy()
     inventory = Inventory(0, 0, 20, 40, 40)
     inventory2 = Inventory(0, 0, 20, 40, 40)
     inventory_block_index = 1
@@ -703,7 +602,6 @@ def main():
     spring = pygame.image.load("spring.png")
     sean = pygame.image.load("sean.png")
     colvin = pygame.image.load("colvin.png")
-    zombie = pygame.image.load("Zombie.png")
 
     """CONTROL"""
     while not done:
@@ -718,13 +616,8 @@ def main():
             done = returned[1]
         # setting up level one
         if level_select is "Level_One":
-            level_one = main_movement(player, field, clock, mouse, mouse2,
-                grass, dirt, stone, bedrock, amon_picture, inventory,
-                inventory_block_index, level_select, "Level_One",
-                previous_level_select, spring, player_color, done, sean, colvin,
-                enemy1, zombie)
-            # the variables in the main function can't be accessed from the
-            # main_movement function. They are
+            level_one = main_movement(player, field, clock, mouse, mouse2, grass, dirt, stone, bedrock, amon_picture, inventory, inventory_block_index, level_select, "Level_One", previous_level_select, spring, player_color, done, sean, colvin)
+            # the variables in the main function can't be accessed from the main_movement function. They are
             level_select = level_one[0]
             inventory_block_index = level_one[1]
             previous_level_select = level_one[2]
@@ -732,11 +625,7 @@ def main():
             done = level_one[4]
         # setting up level two
         if level_select is "Level_Two":
-            level_two = main_movement(player2, field2, clock, mouse, mouse2,
-                soulsand, netherack, netherquartz,
-                bedrock, amon_picture, inventory2, inventory_block_index2,
-                level_select, "Level_Two", previous_level_select, spring,
-                player_color2, done, sean, colvin)
+            level_two = main_movement(player2, field2, clock, mouse, mouse2, soulsand, netherack, netherquartz, bedrock, amon_picture, inventory2, inventory_block_index2, level_select, "Level_Two", previous_level_select, spring, player_color2, done, sean, colvin)
             level_select = level_two[0]
             inventory_block_index2 = level_two[1]
             previous_level_select = level_two[2]
